@@ -1,5 +1,6 @@
 package com.mysoft.proyectofinal.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,7 +23,13 @@ public class RegisterActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
 
         // Observamos el resultado del registro
-        viewModel.getRegisterResult().observe(this, this::showToast);
+        viewModel.getRegisterResult().observe(this, result -> {
+            showToast(result);  // Mostrar el mensaje
+            if (result.equals("Registro exitoso")) {
+                // Si el registro es exitoso, redirigir a la MainActivity
+                redirectToMainActivity();
+            }
+        });
 
         manejarEventos();
     }
@@ -59,5 +66,19 @@ public class RegisterActivity extends AppCompatActivity {
     private void showToast(String message) {
         Log.d("RegisterActivity", "Mensaje: " + message);
         Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void redirectToMainActivity() {
+        // Crear una nueva intención para la MainActivity
+        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+
+        // Limpiar la pila de actividades para que no se pueda volver a la actividad de registro
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Iniciar la MainActivity
+        startActivity(intent);
+
+        // Finalizar la actividad actual (registro)
+        finish();
     }
 }
