@@ -31,27 +31,24 @@ public class AuthProvider {
 
     }
 
-    public MutableLiveData<String> signIn(String email, String password) {
-        MutableLiveData<String> authResult = new MutableLiveData<>();
+    public LiveData<String> signIn(String email, String password) {
+        MutableLiveData<String> userIdLiveData = new MutableLiveData<>();
+
         ParseUser.logInInBackground(email, password, new LogInCallback() {
             @Override
             public void done(ParseUser user, ParseException e) {
-                if (e == null) {
-                    ParseUser currentUser = ParseUser.getCurrentUser();
-                    if (currentUser != null && currentUser.isAuthenticated()) {
-                        authResult.setValue(user.getObjectId());
-                        Log.d("AuthProvider", "Usuario autenticado exitosamente: " + user.getObjectId());
-                    } else {
-                        authResult.setValue("Usuario no autenticado correctamente");
-                        Log.e("AuthProvider", "Error: Usuario no autenticado.");
-                    }
+                if (e == null && user != null) {
+                    // Si el login es exitoso, devolver el userId
+                    userIdLiveData.setValue(user.getObjectId());
                 } else {
-                    Log.e("AuthProvider", "Error en inicio de sesión: ", e);
-                    authResult.setValue(e.getMessage());
+                    // Si hay un error, mostrarlo en el log y devolver null
+                    Log.e("AuthProvider", "Error en inicio de sesión: " + e.getMessage());
+                    userIdLiveData.setValue(null);
                 }
             }
         });
-        return authResult;
+
+        return userIdLiveData;
     }
 
     public LiveData<String> signUp(String email, String password, String username) {
