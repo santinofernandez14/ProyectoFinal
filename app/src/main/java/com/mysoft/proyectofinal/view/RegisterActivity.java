@@ -1,19 +1,13 @@
 package com.mysoft.proyectofinal.view;
 
-
 import android.os.Bundle;
 import android.util.Log;
-
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-
-
-
 import com.mysoft.proyectofinal.databinding.ActivityRegisterBinding;
 import com.mysoft.proyectofinal.util.Validaciones;
 import com.mysoft.proyectofinal.viewmodel.RegisterViewModel;
-
 import java.util.Objects;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -26,7 +20,10 @@ public class RegisterActivity extends AppCompatActivity {
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
+
+        // Observamos el resultado del registro
         viewModel.getRegisterResult().observe(this, this::showToast);
+
         manejarEventos();
     }
 

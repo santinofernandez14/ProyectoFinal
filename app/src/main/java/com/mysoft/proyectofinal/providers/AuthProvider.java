@@ -51,15 +51,19 @@ public class AuthProvider {
         return userIdLiveData;
     }
 
-    public LiveData<String> signUp(String email, String password, String username) {
+    public LiveData<String> signUp(String username, String email, String password) {
         MutableLiveData<String> authResult = new MutableLiveData<>();
+
         if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
             authResult.setValue("Email o contraseña vacíos");
             return authResult;
         }
+
         ParseUser user = new ParseUser();
-        user.setUsername(email);
+        user.setUsername(username); // Aquí estamos usando el username proporcionado
+        user.setEmail(email); // Establecemos el email también
         user.setPassword(password);
+
         user.signUpInBackground(e -> {
             if (e == null) {
                 authResult.setValue(user.getObjectId());
@@ -69,8 +73,10 @@ public class AuthProvider {
                 authResult.setValue(e.getMessage());
             }
         });
+
         return authResult;
     }
+
 
     public LiveData<String> getCurrentUserID() {
         MutableLiveData<String> currentUserId = new MutableLiveData<>();

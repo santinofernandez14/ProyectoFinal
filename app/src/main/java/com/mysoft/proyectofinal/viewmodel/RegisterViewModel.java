@@ -30,10 +30,10 @@ public class RegisterViewModel extends AndroidViewModel {
 
     public void register(String username, String email, String password) {
         authProvider.signUp(username, email, password).observeForever(result -> {
-            if (result != null) {
+            if (result != null && !result.isEmpty()) {
                 registerResult.setValue("Registro exitoso");
             } else {
-                registerResult.setValue("Error en el registro");
+                registerResult.setValue("Error en el registro: " + result);
             }
         });
     }
