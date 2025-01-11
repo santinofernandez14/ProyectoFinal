@@ -13,9 +13,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.airbnb.lottie.LottieAnimationView;
-
-
-
 import com.google.android.material.navigation.NavigationBarView;
 import com.mysoft.proyectofinal.R;
 import com.mysoft.proyectofinal.databinding.ActivityHomeBinding;
@@ -35,53 +32,56 @@ public class HomeActivity extends AppCompatActivity {
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Obtener referencias del ProgressBar y la animación Lottie
+        // Referencias a la animación Lottie y al ProgressBar
         loadingAnimation = findViewById(R.id.loadingAnimation);
         progressBar = findViewById(R.id.progressBar);
 
-        // Mostrar el ProgressBar y la animación Lottie al inicio
-        progressBar.setVisibility(View.VISIBLE); // Mostrar el ProgressBar
-        loadingAnimation.setVisibility(View.VISIBLE); // Mostrar la animación Lottie
-        loadingAnimation.playAnimation(); // Iniciar la animación Lottie
+        // Mostrar el ProgressBar y la animación al inicio
+        showLoading();
 
-        // Simulamos la carga de datos
+        // Simular la carga de datos
         loadData();
 
-        // Configurar el BottomNavigationView
+        // Configuración del BottomNavigationView
         binding.bottomNav.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if (item.getItemId() == R.id.navItemHome) {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navItemHome) {
                     openFragment(HomeFragment.newInstance("", ""));
-                } else if (item.getItemId() == R.id.navItemFiltros) {
+                } else if (itemId == R.id.navItemFiltros) {
                     openFragment(new FiltroFragment());
-                } else if (item.getItemId() == R.id.navItemCharts) {
+                } else if (itemId == R.id.navItemCharts) {
                     openFragment(new ChatsFragment());
-                } else if (item.getItemId() == R.id.navItemPerfil) {
+                } else if (itemId == R.id.navItemPerfil) {
                     openFragment(new PerfilFragment());
                 }
                 return true;
             }
         });
 
+
         // Abrir el fragmento inicial
         openFragment(HomeFragment.newInstance("", ""));
     }
 
-    private void loadData() {
-        // Simulamos un retraso de 3 segundos para cargar datos (como un login)
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // Después de la carga, ocultar el ProgressBar y la animación Lottie
-                progressBar.setVisibility(View.GONE); // Ocultar el ProgressBar
-                loadingAnimation.setVisibility(View.GONE); // Ocultar la animación Lottie
-                loadingAnimation.cancelAnimation(); // Detener la animación
+    private void showLoading() {
+        progressBar.setVisibility(View.VISIBLE);
+        loadingAnimation.setVisibility(View.VISIBLE);
+        loadingAnimation.playAnimation();
+        binding.bottomNav.setVisibility(View.GONE); // Ocultar barra de navegación
+    }
 
-                // Mostrar la barra de navegación después de la carga
-                binding.bottomNav.setVisibility(View.VISIBLE); // Hacer visible la barra de navegación
-            }
-        }, 3000); // Simulamos un retraso de 3 segundos
+    private void loadData() {
+        new Handler().postDelayed(() -> {
+            // Ocultar el ProgressBar y la animación tras la carga
+            progressBar.setVisibility(View.GONE);
+            loadingAnimation.setVisibility(View.GONE);
+            loadingAnimation.cancelAnimation();
+
+            // Mostrar la barra de navegación
+            binding.bottomNav.setVisibility(View.VISIBLE);
+        }, 3000); // Simulación de un retraso de 3 segundos
     }
 
     private void openFragment(Fragment fragment) {

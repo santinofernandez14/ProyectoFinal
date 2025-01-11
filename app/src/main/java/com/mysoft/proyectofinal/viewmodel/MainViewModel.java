@@ -8,20 +8,16 @@ import androidx.lifecycle.ViewModel;
 
 import com.mysoft.proyectofinal.providers.AuthProvider;
 
-
 public class MainViewModel extends ViewModel {
     public final AuthProvider authProvider;
 
-    public MainViewModel(Context context){
-        authProvider=new AuthProvider(context);
+    public MainViewModel(Context context) {
+        authProvider = new AuthProvider(context);
     }
 
     public LiveData<String> login(String email, String password) {
         MutableLiveData<String> loginResult = new MutableLiveData<>();
-        authProvider.signIn(email, password).observeForever(userId -> {
-            loginResult.setValue(userId);
-        });
+        authProvider.signIn(email, password).observeForever(userId -> loginResult.setValue(userId));
         return loginResult;
     }
-
 }

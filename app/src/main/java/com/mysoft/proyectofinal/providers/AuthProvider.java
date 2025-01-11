@@ -31,18 +31,20 @@ public class AuthProvider {
 
     }
 
-    public LiveData<String> signIn(String email, String password) {
+    public MutableLiveData<String> signIn(String email, String password) {
         MutableLiveData<String> authResult = new MutableLiveData<>();
-        if (email.isEmpty() || password.isEmpty()) {
-            authResult.setValue("Email o contraseña vacíos");
-            return authResult;
-        }
         ParseUser.logInInBackground(email, password, new LogInCallback() {
             @Override
             public void done(ParseUser user, ParseException e) {
                 if (e == null) {
-                    authResult.setValue(user.getObjectId());
-                    Log.d("AuthProvider", "Usuario autenticado exitosamente: " + user.getObjectId());
+                    ParseUser currentUser = ParseUser.getCurrentUser();
+                    if (currentUser != null && currentUser.isAuthenticated()) {
+                        authResult.setValue(user.getObjectId());
+                        Log.d("AuthProvider", "Usuario autenticado exitosamente: " + user.getObjectId());
+                    } else {
+                        authResult.setValue("Usuario no autenticado correctamente");
+                        Log.e("AuthProvider", "Error: Usuario no autenticado.");
+                    }
                 } else {
                     Log.e("AuthProvider", "Error en inicio de sesión: ", e);
                     authResult.setValue(e.getMessage());
@@ -82,18 +84,12 @@ public class AuthProvider {
         return currentUserId;
     }
 
-    public LiveData<Boolean> logout() {
+    public MutableLiveData<Boolean> logout() {
         MutableLiveData<Boolean> logoutResult = new MutableLiveData<>();
         ParseUser.logOutInBackground(e -> {
             if (e == null) {
-                File cacheDir = getApplicationContext().getCacheDir();
-                if (cacheDir.isDirectory()) {
-                    for (File file : cacheDir.listFiles()) {
-                        file.delete();
-                    }
-                }
                 logoutResult.setValue(true);
-                Log.d("AuthProvider", "Caché eliminada y usuario desconectado.");
+                Log.d("AuthProvider", "Usuario desconectado.");
             } else {
                 logoutResult.setValue(false);
                 Log.e("AuthProvider", "Error al desconectar al usuario: ", e);

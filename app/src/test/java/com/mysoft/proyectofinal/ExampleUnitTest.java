@@ -1,4 +1,4 @@
-package com.example.proyectofinal;
+package com.mysoft.proyectofinal;
 
 import org.junit.Test;
 
