@@ -24,6 +24,10 @@ public class Post extends ParseObject {
         // Esto es necesario para ParseObject
     }
 
+    public String getId() {
+        return getObjectId(); // Obtiene el ID único de Parse
+    }
+
     // Getters y setters para cada campo
     public String getTitulo() {
         return getString("titulo");
