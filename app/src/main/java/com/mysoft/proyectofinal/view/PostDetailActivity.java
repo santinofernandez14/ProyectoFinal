@@ -1,21 +1,14 @@
 package com.mysoft.proyectofinal.view;
 
-
-
 import android.os.Bundle;
-
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
-
-
-
 import com.mysoft.proyectofinal.R;
 import com.mysoft.proyectofinal.databinding.ActivityPostDetailBinding;
 import com.mysoft.proyectofinal.viewmodel.PostDetailViewModel;
@@ -35,7 +28,6 @@ public class PostDetailActivity extends AppCompatActivity {
     private PostDetailViewModel postDetailViewModel;
     private String postId;  // Declaramos postId como una variable de clase
     private CircleImageView circleImageView; // Declaramos CircleImageView para la foto de perfil
-    private CircleImageView circleImageBackPostDetail;
     private MutableLiveData<Boolean> navigateToHome = new MutableLiveData<>();
 
     public LiveData<Boolean> getNavigateToHome() {
@@ -61,7 +53,13 @@ public class PostDetailActivity extends AppCompatActivity {
         postDetailViewModel = new ViewModelProvider(this).get(PostDetailViewModel.class);
 
         // Obtener el usuario (supongamos que ya tienes un ParseUser actual)
-        ParseUser user = ParseUser.getCurrentUser();  // Obtener el usuario actual (por ejemplo)
+        ParseUser user = ParseUser.getCurrentUser();  // Obtener el usuario actual
+
+        // Obtener el postId desde el Intent
+        postId = getIntent().getStringExtra("postId");  // Asegúrate de enviar el postId desde el Activity anterior
+
+        // Establecer el postId en el ViewModel
+        postDetailViewModel.setPostId(postId);
 
         // Obtener los posts de este usuario
         postDetailViewModel.getAllPosts(user);
@@ -80,20 +78,12 @@ public class PostDetailActivity extends AppCompatActivity {
             }
         });
 
-        // Obtener el postId (puedes obtenerlo de un extra de Intent, o asignarlo de alguna manera)
-        postId = "some_post_id";  // Reemplaza con el ID del post real
-
         // Llamar al método para cargar los detalles del post
         cargarDetallesPost();
 
         // Llamar al método para cargar la foto de perfil del usuario
         cargarFotoPerfil(user.getObjectId());
-
-
-
     }
-
-
 
     private void cargarDetallesPost() {
         TextView lugar = findViewById(R.id.lugar);
@@ -103,7 +93,7 @@ public class PostDetailActivity extends AppCompatActivity {
         TextView presupuesto = findViewById(R.id.presupuesto);
 
         // Obtener los detalles del post desde el ViewModel
-        postDetailViewModel.getPostDetail(postId).observe(this, postDetails -> {
+        postDetailViewModel.getPostDetail().observe(this, postDetails -> {
             if (postDetails != null) {
                 lugar.setText(postDetails.getTitulo());
                 categoria.setText(postDetails.getCategoria());
@@ -113,7 +103,6 @@ public class PostDetailActivity extends AppCompatActivity {
             }
         });
     }
-
 
     // Método para cargar la foto de perfil
     private void cargarFotoPerfil(String userId) {
@@ -133,7 +122,4 @@ public class PostDetailActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
 }

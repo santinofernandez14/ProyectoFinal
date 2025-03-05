@@ -222,21 +222,7 @@ public class PostProvider {
         void onFailure(Exception e);
     }
 
-    public void getPostDetail(String postId, PostDetailCallback callback) {
-        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
-        query.getInBackground(postId, new GetCallback<Post>() {
-            @Override
-            public void done(Post post, ParseException e) {
-                if (e == null) {
-                    // Si la consulta fue exitosa, llamamos al método onSuccess del callback
-                    callback.onSuccess(post);
-                } else {
-                    // Si ocurrió un error, llamamos al método onFailure del callback
-                    callback.onFailure(e);
-                }
-            }
-        });
-    }
+
     public void fetchComments(String postId, CommentsCallback callback) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Comentario");
         query.whereEqualTo("post", ParseObject.createWithoutData("Post", postId));
@@ -260,4 +246,19 @@ public class PostProvider {
 
         // Aquí pasas el SaveCallback al método saveInBackground()
     }
+    public void getPostDetail(String postId, PostDetailCallback callback) {
+        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
+        query.whereEqualTo("objectId", postId);
+        query.getFirstInBackground(new GetCallback<Post>() {
+            @Override
+            public void done(Post post, ParseException e) {
+                if (e == null && post != null) {
+                    callback.onSuccess(post);
+                } else {
+                    callback.onFailure(e);
+                }
+            }
+        });
+    }
+
 }
