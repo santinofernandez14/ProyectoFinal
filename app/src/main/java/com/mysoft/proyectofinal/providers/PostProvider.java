@@ -3,6 +3,7 @@ package com.mysoft.proyectofinal.providers;
 import android.util.Log;
 
 import com.mysoft.proyectofinal.model.Post;
+import com.mysoft.proyectofinal.model.User;
 import com.parse.GetCallback;
 import com.parse.SaveCallback;
 
@@ -15,7 +16,6 @@ import com.parse.ParseUser;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import org.imaginativeworld.whynotimagecarousel.model.CarouselItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,113 +23,117 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class PostProvider {
 
-    // Método para agregar un post
     public LiveData<String> addPost(Post post) {
         MutableLiveData<String> result = new MutableLiveData<>();
-
-        if (post.getImagenes() == null || post.getImagenes().isEmpty()) {
-            result.setValue("Error: El post debe tener al menos una imagen.");
-            return result;
-        }
-
-        ParseObject postObject = ParseObject.create("Post");
-
-        postObject.put("titulo", post.getTitulo());
-        postObject.put("descripcion", post.getDescripcion());
-        postObject.put("duracion", post.getDuracion());
-        postObject.put("categoria", post.getCategoria());
-        postObject.put("presupuesto", post.getPresupuesto());
-        postObject.put("user", ParseUser.getCurrentUser()); // Relación con el usuario
-
-        List<String> imagesToSave = post.getImagenes();
-        AtomicInteger imagesSavedCount = new AtomicInteger(0);
-
-        postObject.saveInBackground(e -> {
-            if (e != null) {
-                result.setValue("Error al guardar el post: " + (e.getMessage() != null ? e.getMessage() : "Error desconocido"));
-            } else {
-                ParseRelation<ParseObject> relation = postObject.getRelation("images");
-                for (String url : imagesToSave) {
-                    ParseObject imageObject = ParseObject.create("Image");
+        post.put("titulo", post.getTitulo());
+        post.put("descripcion", post.getDescripcion());
+        post.put("duracion", post.getDuracion());
+        post.put("categoria", post.getCategoria());
+        post.put("presupuesto", post.getPresupuesto());
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        post.put("user", currentUser);
+        post.saveInBackground(e -> {
+            if (e == null) {
+                ParseRelation<ParseObject> relation = post.getRelation("images");
+                for (String url : post.getImagenes()) {
+                    ParseObject imageObject = new ParseObject("Image");
                     imageObject.put("url", url);
                     imageObject.saveInBackground(imgSaveError -> {
                         if (imgSaveError == null) {
                             relation.add(imageObject);
-                            imagesSavedCount.incrementAndGet();
-                            if(imagesSavedCount.get() == imagesToSave.size()) {
-                                postObject.saveInBackground(saveError -> {
-                                    if (saveError == null) {
-                                        result.setValue("Post publicado");
-                                    } else {
-                                        result.setValue("Error al guardar la relación con las imágenes: " + (saveError.getMessage() != null ? saveError.getMessage() : "Error desconocido"));
-                                    }
-                                });
-                            }
+                            post.saveInBackground(saveError -> {
+                                if (saveError == null) {
+                                    result.setValue("Post publicado");
+                                } else {
+                                    result.setValue("Error al guardar la relación con las imágenes: " + saveError.getMessage());
+                                }
+                            });
                         } else {
-                            result.setValue("Error al guardar la imagen: " + (imgSaveError.getMessage() != null ? imgSaveError.getMessage() : "Error desconocido"));
+                            result.setValue("Error al guardar la imagen: " + imgSaveError.getMessage());
                         }
                     });
                 }
+            } else {
+                result.setValue("Error al guardar el post: " + e.getMessage());
+            }
+        });
+
+        return result;
+    }
+
+    public LiveData<List<Post>> getPostsByCurrentUser() {
+        MutableLiveData<List<Post>> result = new MutableLiveData<>();
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        if (currentUser == null) {
+            result.setValue(new ArrayList<>());
+            return result;
+        }
+        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
+        query.whereEqualTo("user", currentUser);
+        query.include("user");
+        query.orderByDescending("createdAt");
+        query.findInBackground((posts, e) -> {
+            if (e == null) {
+                result.setValue(posts);
+            } else {
+                result.setValue(new ArrayList<>());
+                Log.e("ParseError", "Error al recuperar los posts: ", e);
             }
         });
         return result;
     }
 
-
-
-    // Método para obtener todos los posts, con paginación
-    public LiveData<List<Post>> getAllPosts(int page) {
+    public LiveData<List<Post>> getAllPosts() {
         MutableLiveData<List<Post>> result = new MutableLiveData<>();
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Post");
-        query.include("user"); // Incluye información del usuario
-        query.orderByDescending("createdAt");
-        query.setLimit(5); // Límite de 5 posts por página
-        query.setSkip(page * 5); // Desplaza según la página (5 posts por página)
-
+        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
+        query.include("user"); // Asegúrate de incluir el usuario relacionado
         query.findInBackground((posts, e) -> {
             if (e == null) {
                 List<Post> postList = new ArrayList<>();
                 for (ParseObject postObject : posts) {
+                    Log.d("PostObject", "ID: " + postObject.getObjectId() + ", Title: " + postObject.getString("titulo"));
+
+                    Post post = ParseObject.create(Post.class);
+                    post.setObjectId(postObject.getObjectId());
+                    post.setTitulo(postObject.getString("titulo"));
+                    post.setDescripcion(postObject.getString("descripcion"));
+                    post.setDuracion(postObject.getInt("duracion"));
+                    post.setCategoria(postObject.getString("categoria"));
+                    post.setPresupuesto(postObject.getDouble("presupuesto"));
+
+                    // Obtener imágenes
+                    ParseRelation<ParseObject> relation = postObject.getRelation("images");
                     try {
-                        // Crear un objeto Post de ParseObject
-                        Post post = (Post) postObject;  // Usar el casteo a Post
-
-                        // Verificar si los valores son nulos y asignar valores predeterminados si es necesario
-                        String titulo = post.getTitulo();
-                        String descripcion = post.getDescripcion();
-                        int duracion = post.getDuracion();
-                        String categoria = post.getCategoria();
-                        double presupuesto = post.getPresupuesto();
-
-                        // Si alguno de estos campos es nulo, asignar un valor predeterminado
-                        if (titulo == null) titulo = "Título no disponible";
-                        if (descripcion == null) descripcion = "Descripción no disponible";
-                        if (categoria == null) categoria = "Categoría no disponible";
-
-                        // Asignar los valores a los campos de post
-                        post.setTitulo(titulo);
-                        post.setDescripcion(descripcion);
-                        post.setDuracion(duracion);
-                        post.setCategoria(categoria);
-                        post.setPresupuesto(presupuesto);
-
-                        // Cargar imágenes
-                        ParseRelation<ParseObject> relation = postObject.getRelation("images");
-                        try {
-                            List<ParseObject> images = relation.getQuery().find();
-                            List<String> imageUrls = new ArrayList<>();
-                            for (ParseObject imageObject : images) {
-                                imageUrls.add(imageObject.getString("url"));
-                            }
-                            post.setImagenes(imageUrls);
-                        } catch (ParseException parseException) {
-                            parseException.printStackTrace();
+                        List<ParseObject> images = relation.getQuery().find();
+                        List<String> imageUrls = new ArrayList<>();
+                        for (ParseObject imageObject : images) {
+                            imageUrls.add(imageObject.getString("url"));
                         }
-
-                        postList.add(post);
-                    } catch (Exception ex) {
-                        Log.e("ParseError", "Error al procesar el post: ", ex);
+                        post.setImagenes(imageUrls);
+                    } catch (ParseException parseException) {
+                        parseException.printStackTrace();
                     }
+
+                    // Mapeo del usuario
+                    ParseUser parseUser = postObject.getParseUser("user");
+                    if (parseUser != null) {
+                        try {
+                            parseUser.fetchIfNeeded();
+                            User user = ParseObject.createWithoutData(User.class, parseUser.getObjectId());
+                            user.setUsername(parseUser.getUsername());
+                            user.setEmail(parseUser.getEmail());
+                            user.setFotoperfil(parseUser.getString("fotoperfil"));
+                            user.setRedSocial(parseUser.getString("redSocial"));
+
+                            post.setUser(user); // Asignar el usuario convertido al post
+                        } catch (ParseException parseException) {
+                            Log.e("FetchUserError", "Error al obtener el usuario: ", parseException);
+                        }
+                    } else {
+                        Log.d("UserPointer", "User pointer es null");
+                    }
+
+                    postList.add(post);
                 }
                 result.setValue(postList);
             } else {
@@ -140,103 +144,83 @@ public class PostProvider {
 
         return result;
     }
-    public interface PostsCallback {
-        void onSuccess(List<Post> posts);
-        void onFailure(ParseException e);
-    }
-
-    public void getAllPostsByUser(ParseUser user, PostsCallback callback) {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Post");
-        query.whereEqualTo("user", user);  // Filtrar por el usuario
-        query.include("images");  // Incluir las imágenes relacionadas
-        query.findInBackground((posts, e) -> {
-            if (e == null) {
-                List<Post> postList = new ArrayList<>();
-                for (ParseObject postObject : posts) {
-                    try {
-                        // Crear un objeto Post a partir del ParseObject
-                        Post post = (Post) postObject;  // Usar el casteo a Post
-
-                        // Cargar imágenes
-                        ParseRelation<ParseObject> relation = postObject.getRelation("images");
-                        try {
-                            List<ParseObject> images = relation.getQuery().find();
-                            List<String> imageUrls = new ArrayList<>();
-                            for (ParseObject imageObject : images) {
-                                imageUrls.add(imageObject.getString("url"));
-                            }
-                            post.setImagenes(imageUrls);
-                        } catch (ParseException parseException) {
-                            parseException.printStackTrace();
-                        }
-
-                        postList.add(post);
-                    } catch (Exception ex) {
-                        Log.e("ParseError", "Error al procesar el post: ", ex);
-                    }
-                }
-                callback.onSuccess(postList);  // Devolver los posts con las imágenes
-            } else {
-                callback.onFailure(e);  // Devolver error
-            }
-        });
-    }
 
 
+    public LiveData<String> deletePost(String postId) {
+        MutableLiveData<String> result = new MutableLiveData<>();
 
-
-
-    public void getImagesForPost(String postId, int page, final ImagesCallback callback) {
         ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
-        query.whereEqualTo("objectId", postId);
-
-        // Paginación: set limit y skip
-        query.setLimit(3);  // Limitar a 3 imágenes por carga
-        query.setSkip(page * 3);  // Skip según la página actual
-
-        query.findInBackground((List<Post> posts, ParseException e) -> {
-            if (e == null && posts != null && !posts.isEmpty()) {
-                List<String> imageUrls = new ArrayList<>();
-                for (Post post : posts) {
-                    imageUrls.addAll(post.getImagenes());
-                }
-                callback.onSuccess(imageUrls);
+        query.getInBackground(postId, (post, e) -> {
+            if (e == null) {
+                post.deleteInBackground(e1 -> {
+                    if (e1 == null) {
+                        Log.d("PostDelete", "Post eliminado con éxito.");
+                        result.postValue("Post eliminado correctamente");
+                    } else {
+                        Log.e("PostDelete", "Error al eliminar el post: ", e1);
+                        result.postValue("Error al eliminar el post: " + e1.getMessage());
+                    }
+                });
             } else {
-                callback.onFailure(e);
+                Log.e("PostDelete", "Error al encontrar el post: ", e);
+                result.postValue("Error al encontrar el post: " + e.getMessage());
             }
         });
+
+        return result;
     }
 
-    // Interface de callback
-    public interface ImagesCallback {
-        void onSuccess(List<String> imageUrls);
-        void onFailure(ParseException e);
+
+    public LiveData<Post> getPostDetail(String postId) {
+        MutableLiveData<Post> result = new MutableLiveData<>();
+        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
+        query.include("user");
+        query.include("images");
+        query.getInBackground(postId, (post, e) -> {
+            if (e == null) {
+                ParseRelation<ParseObject> relation = post.getRelation("images");
+                try {
+                    List<ParseObject> images = relation.getQuery().find();
+                    List<String> imageUrls = new ArrayList<>();
+                    for (ParseObject imageObject : images) {
+                        imageUrls.add(imageObject.getString("url"));
+                    }
+                    post.setImagenes(imageUrls);
+                } catch (ParseException parseException) {
+                    parseException.printStackTrace();
+                }
+                ParseObject userObject = post.getParseObject("user");
+                if (userObject != null) try {
+                    userObject.fetchIfNeeded();
+                    User user = new User();
+                    user.setUsername(userObject.getString("username"));
+                    user.setEmail(userObject.getString("email"));
+                    user.setFotoperfil(userObject.getString("foto_perfil"));
+
+                    post.setUser(user);
+                } catch (ParseException userFetchException) {
+                    userFetchException.printStackTrace();
+                }
+                else {
+                    Log.w("PostDetail", "El usuario asociado al post es nulo.");
+                }
+
+                result.setValue(post);
+            } else {
+                Log.e("ParseError", "Error al obtener el post: ", e);
+                result.setValue(null);
+            }
+        });
+
+        return result;
     }
-    public interface PostDetailCallback {
-        void onSuccess(Post post);  // Llamado cuando el post se obtiene correctamente
-        void onFailure(ParseException e);  // Llamado si ocurre un error
-    }
+
 
     public interface CommentsCallback {
         void onSuccess(List<ParseObject> comments);
         void onFailure(Exception e);
     }
 
-    public void getPostDetail(String postId, PostDetailCallback callback) {
-        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
-        query.getInBackground(postId, new GetCallback<Post>() {
-            @Override
-            public void done(Post post, ParseException e) {
-                if (e == null) {
-                    // Si la consulta fue exitosa, llamamos al método onSuccess del callback
-                    callback.onSuccess(post);
-                } else {
-                    // Si ocurrió un error, llamamos al método onFailure del callback
-                    callback.onFailure(e);
-                }
-            }
-        });
-    }
     public void fetchComments(String postId, CommentsCallback callback) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Comentario");
         query.whereEqualTo("post", ParseObject.createWithoutData("Post", postId));
@@ -258,6 +242,7 @@ public class PostProvider {
         comentario.put("post", post);
         comentario.put("user", currentUser);
 
-        // Aquí pasas el SaveCallback al método saveInBackground()
+        comentario.saveInBackground(callback);
     }
+
 }

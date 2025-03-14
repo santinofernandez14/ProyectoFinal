@@ -25,7 +25,6 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 >
-
                 <TextView
                     android:id="@+id/textView"
                     android:layout_width="wrap_content"
@@ -41,10 +40,6 @@
                     android:layout_height="180dp"
                     android:src="@drawable/icono_ppal"
                     android:padding="10dp" />
-
-
-
-
             </LinearLayout>
 
         </io.github.florent37.shapeofview.shapes.DiagonalView>
@@ -110,7 +105,8 @@
                 </com.google.android.material.textfield.TextInputEditText>
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
-        <Button android:id="@+id/btLogin"
+        <Button
+            android:id="@+id/btLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="INICIAR SESIÓN"
@@ -141,4 +137,3 @@
             android:textSize="17sp" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

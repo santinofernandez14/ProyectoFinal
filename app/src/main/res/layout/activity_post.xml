@@ -29,34 +29,29 @@
                 app:layout_collapseMode="pin" />
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:padding="16dp">
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
-
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/titulo_ppal"
+                    android:textSize="24sp"
                     android:textAlignment="center"
-                    android:textColor="@color/lavender"
-                    android:textSize="24sp" />
-
+                    android:textColor="@color/lavender" />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView"
                     android:layout_width="match_parent"
@@ -65,7 +60,6 @@
                     android:background="@drawable/lavender_border"
                     android:visibility="gone"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
                 <EditText
                     android:id="@+id/itTitulo"
                     android:layout_width="match_parent"
@@ -74,9 +68,8 @@
                     android:background="@drawable/lavender_border"
                     android:hint="@string/titulo_post"
                     android:padding="16dp"
-                    android:textColor="@color/lavender"
-                    android:textSize="13sp" />
-
+                    android:textSize="13sp"
+                    android:textColor="@color/lavender" />
                 <EditText
                     android:id="@+id/etDescripcion"
                     android:layout_width="match_parent"
@@ -85,42 +78,38 @@
                     android:background="@drawable/lavender_border"
                     android:hint="@string/descripcion"
                     android:padding="16dp"
-                    android:textColor="@color/lavender"
-                    android:textSize="13sp" />
-
+                    android:textSize="13sp"
+                    android:textColor="@color/lavender" />
                 <Spinner
                     android:id="@+id/spinnerCategoria"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/lavender_border" />
-
                 <EditText
                     android:id="@+id/etDuracion"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:layout_marginTop="10dp"
                     android:background="@drawable/lavender_border"
-                    android:gravity="start|center_vertical"
-                    android:hint="@string/duracion"
-                    android:inputType="number"
+                    android:layout_marginTop="10dp"
                     android:padding="16dp"
+                    android:hint="@string/duracion"
+                    android:gravity="start|center_vertical"
+                    android:inputType="number"
                     android:textColor="@color/lavender"
-                    android:textSize="13sp" />
-
+                    android:textSize="13sp"/>
                 <EditText
                     android:id="@+id/etPresupuesto"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/lavender_border"
-                    android:gravity="start|center_vertical"
                     android:hint="@string/presupuesto"
                     android:inputType="numberDecimal"
+                    android:background="@drawable/lavender_border"
+                    android:layout_marginTop="10dp"
                     android:padding="16dp"
+                    android:gravity="start|center_vertical"
                     android:textColor="@color/lavender"
-                    android:textSize="13sp" />
-
+                    android:textSize="13sp"/>
                 <Button
                     android:id="@+id/btnPublicar"
                     android:layout_width="match_parent"
@@ -131,13 +120,11 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </androidx.core.widget.NestedScrollView>
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="32dp"
+        android:layout_height="50dp"
         android:orientation="horizontal"
         android:layout_gravity="bottom"
-        android:translationY="45dp"
         >
         <ImageView
             android:layout_width="match_parent"
@@ -147,17 +134,4 @@
             android:layout_gravity="end"
             />
     </LinearLayout>
-    <ImageView
-        android:id="@+id/circleImageBackPost"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_arrow_left"
-        android:background="@drawable/circular_background_white"
-        android:scaleType="centerCrop"
-        android:layout_margin="15dp"
-        android:padding="7dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:translationY="45dp"
-        />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

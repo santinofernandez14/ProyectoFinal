@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.mysoft.proyectofinal.R;
 import com.mysoft.proyectofinal.adapters.ImageAdapter;
+
 import com.mysoft.proyectofinal.databinding.ActivityPostBinding;
 import com.mysoft.proyectofinal.model.Post;
 import com.mysoft.proyectofinal.util.ImageUtils;
@@ -66,8 +67,7 @@ public class PostActivity extends AppCompatActivity {
     private void setupViewModels() {
         postViewModel = new ViewModelProvider(this).get(PostViewModel.class);
         postViewModel.getPostSuccess().observe(this, exito -> {
-            String mensaje = exito ? "Post publicado con éxito" : "Hubo un error al publicar el post";
-            Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, exito, Toast.LENGTH_SHORT).show();
             finish();
         });
     }
@@ -90,7 +90,6 @@ public class PostActivity extends AppCompatActivity {
             }
         });
     }
-
     @SuppressLint("NotifyDataSetChanged")
     private void setupGalleryLauncher() {
         galleryLauncher = registerForActivityResult(
@@ -156,7 +155,13 @@ public class PostActivity extends AppCompatActivity {
         post.setCategoria(categoria);
         post.setPresupuesto(presupuesto);
         post.setImagenes(new ArrayList<>(imagenesUrls));
-        postViewModel.publicar(post);
+        postViewModel.publicar(post).observe(this, result -> {
+            if (result != null) {
+                Toast.makeText(this, "Post publicado con éxito", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Error al publicar el post", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateRecyclerViewVisibility() {
@@ -168,7 +173,7 @@ public class PostActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.d("PostActivity", "onRequestPermissionsResult ejecutado");
+
         if (requestCode == REQUEST_IMAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.d("PostActivity", "Permiso concedido, abriendo galería");
             ImageUtils.openGallery(PostActivity.this, galleryLauncher);

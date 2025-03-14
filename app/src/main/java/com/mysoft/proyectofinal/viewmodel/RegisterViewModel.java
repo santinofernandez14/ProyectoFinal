@@ -6,34 +6,51 @@ import android.util.Log;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 
+import com.mysoft.proyectofinal.model.User;
 import com.mysoft.proyectofinal.providers.AuthProvider;
 import com.parse.ParseUser;
 
 
 
 
-public class RegisterViewModel extends AndroidViewModel {
-    private final AuthProvider authProvider;
+public class RegisterViewModel extends ViewModel {
     private final MutableLiveData<String> registerResult = new MutableLiveData<>();
+    private final AuthProvider authProvider;
 
-    public RegisterViewModel(Application application) {
-        super(application);
-        authProvider = new AuthProvider(application);
+
+    public RegisterViewModel() {
+        this.authProvider = new AuthProvider();
     }
+
 
     public LiveData<String> getRegisterResult() {
         return registerResult;
     }
 
-    public void register(String username, String email, String password) {
-        authProvider.signUp(username, email, password).observeForever(result -> {
-            if (result != null && !result.isEmpty()) {
-                registerResult.setValue("Registro exitoso");
-            } else {
-                registerResult.setValue("Error en el registro: " + result);
+
+    public void register(User user) {
+
+        LiveData<String> result = authProvider.signUp(user);
+
+
+        result.observeForever(new Observer<String>() {
+            @Override
+            public void onChanged(String objectId) {
+                if (objectId != null) {
+
+                    registerResult.setValue(objectId);
+                    Log.d("RegisterViewModel", "Usuario registrado con ID: " + objectId);
+                } else {
+                    // Registration failed
+                    registerResult.setValue(null);
+                    Log.e("RegisterViewModel", "Error durante el registro.");
+                }
+
+                result.removeObserver(this);
             }
         });
     }

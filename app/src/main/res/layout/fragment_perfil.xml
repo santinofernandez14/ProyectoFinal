@@ -5,24 +5,21 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="view.fragments.PerfilFragment">
-
-    <!-- AppBarLayout for collapsing toolbar and profile image -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="270dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:background="@drawable/headerbkg">
-
+        android:background="@drawable/headerbkg"
+        >
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
 
+            >
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-
-                <!-- Profile Image (Circle ImageView) -->
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/circleImageView"
                     android:layout_width="match_parent"
@@ -32,16 +29,15 @@
                     android:layout_marginTop="130dp"
                     android:scaleType="centerCrop"
                     app:civ_border_color="@color/white"
-                    app:civ_border_width="5dp"/>
-
-                <!-- Social media section -->
+                    app:civ_border_width="5dp"
+                    />
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_gravity="center|right"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginBottom="5dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="1dp"
                     android:gravity="center"
                     tools:ignore="RtlHardcoded">
 
@@ -54,9 +50,8 @@
                         android:textStyle="bold"
                         android:textSize="15sp" />
 
-
                     <TextView
-
+                        android:id="@+id/cantPost"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/redsocial"
@@ -66,38 +61,37 @@
                         tools:ignore="TextSizeCheck" />
 
 
-
                 </LinearLayout>
-
-                <!-- Post count section -->
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_gravity="center|left"
-
-                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginBottom="1dp"
                     android:gravity="center">
 
                     <TextView
-                        android:id="@+id/conteoPublicaciones"
+                        android:id="@+id/name_user"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"
+                        android:text=""
                         android:textColor="@color/white"
-                        android:textSize="15sp"
                         android:textStyle="bold"
-                        tools:ignore="TextSizeCheck" />
+                        android:textSize="20sp"
+                        android:textAlignment="center"
+                        />
 
                     <TextView
+                        android:id="@+id/email_user"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/publicaciones"
+                        android:text=""
                         android:textColor="@color/white"
-                        android:textSize="13sp"
                         android:textStyle="bold"
-                        tools:ignore="TextSizeCheck" />
+                        android:layout_marginTop="7dp"
+                        android:textSize="15sp" />
 
 
                 </LinearLayout>
@@ -107,45 +101,31 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="center"
-        android:layout_margin="100dp"
-        >
-        <TextView
-            android:id="@+id/name_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="@color/lavender"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:textAlignment="center"
-            />
 
-        <TextView
-            android:id="@+id/email_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="@color/lavender"
-            android:textStyle="bold"
-            android:layout_marginTop="7dp"
-            android:textSize="15sp" />
 
-    </LinearLayout>
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="20dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:ignore="SpeakableTextPresentCheck">
-    </androidx.core.widget.NestedScrollView>;
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"/>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="150dp"
+
         android:orientation="horizontal"
         android:layout_gravity="bottom"
         >
@@ -158,5 +138,5 @@
             android:layout_gravity="end"
             tools:ignore="UnusedAttribute" />
     </LinearLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

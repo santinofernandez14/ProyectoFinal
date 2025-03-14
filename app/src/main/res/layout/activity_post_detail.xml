@@ -1,10 +1,11 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="view.fragments.PerfilFragment">
-
 
     <!-- AppBarLayout for the header -->
     <com.google.android.material.appbar.AppBarLayout
@@ -19,7 +20,6 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <FrameLayout
-                android:id="@+id/postdetailLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -35,7 +35,6 @@
                     app:civ_border_color="@color/white"
                     app:civ_border_width="5dp" />
             </FrameLayout>
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -65,6 +64,15 @@
                     android:textSize="11sp"
                     android:textStyle="bold"
                     tools:ignore="TextSizeCheck" />
+                <TextView
+                    android:id="@+id/insta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/redsocial"
+                    android:textColor="@color/white"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    tools:ignore="TextSizeCheck" />
 
 
             </LinearLayout>
@@ -87,12 +95,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="320dp"
                 android:orientation="vertical">
-
-                <org.imaginativeworld.whynotimagecarousel.ImageCarousel
-                    android:id="@+id/carousel"
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPager"
                     android:layout_width="match_parent"
-                    android:layout_height="320dp" />
-
+                    android:layout_height="200dp"
+                    android:clipToPadding="false"
+                    android:clipChildren="false"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="5dp"
+                    android:overScrollMode="never" />
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tabLayout"
                     android:layout_width="wrap_content"
@@ -101,8 +112,17 @@
                     android:layout_marginTop="5dp"
                     app:tabIndicatorColor="@color/purple_500"
                     app:tabIndicatorHeight="4dp" />
-            </LinearLayout>
+                <ImageView
+                    android:id="@+id/fabComentar"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_comentario"
+                    android:scaleType="centerCrop"
+                    android:layout_margin="30dp"
+                    android:layout_gravity="end|bottom"
+                    android:padding="7dp"/>
 
+            </LinearLayout>
             <!-- Post Details -->
             <TextView
                 android:id="@+id/lugar"
@@ -117,7 +137,7 @@
                 android:id="@+id/categoria"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/colorGray"
+                android:textColor="@color/colorDarkGray"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -126,7 +146,7 @@
                 android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/colorGray"
+                android:textColor="@color/colorDarkGray"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -134,7 +154,7 @@
                 android:id="@+id/duracion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/colorGray"
+                android:textColor="@color/colorDarkGray"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -142,36 +162,57 @@
                 android:id="@+id/presupuesto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/colorGray"
+                android:textColor="@color/colorDarkGray"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
+
+
+            <!-- Lista de comentarios -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Comentarios"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:paddingBottom="8dp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerComentarios"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+
+
+
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+            <!-- Botón para eliminar post -->
+            <Button
+                android:id="@+id/btnEliminarPost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Eliminar Post"
+                android:layout_marginTop="16dp"
+                android:layout_gravity="center_horizontal"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Floating Action Button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabComentar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|center_horizontal"
-        android:layout_margin="36dp"
-        android:src="@drawable/ic_chat"
-        app:contentDescription="@string/comienzaUnChat" />
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPagerImages"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <ImageView
-        android:id="@+id/circleImageBackPostDetail"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_arrow_left"
-        android:background="@drawable/circular_background"
-        android:scaleType="centerCrop"
-        android:layout_margin="15dp"
-        android:padding="7dp"
-        android:clickable="true"
-        android:focusable="true"/>
 
 
 

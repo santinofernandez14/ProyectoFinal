@@ -6,133 +6,131 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 
-
+import com.mysoft.proyectofinal.R;
 import com.mysoft.proyectofinal.adapters.PostAdapter;
 import com.mysoft.proyectofinal.databinding.FragmentHomeBinding;
 import com.mysoft.proyectofinal.model.Post;
+import com.mysoft.proyectofinal.view.HomeActivity;
 import com.mysoft.proyectofinal.view.MainActivity;
 import com.mysoft.proyectofinal.view.PostActivity;
 import com.mysoft.proyectofinal.view.PostDetailActivity;
+import com.mysoft.proyectofinal.viewmodel.AuthViewModel;
 import com.mysoft.proyectofinal.viewmodel.PostViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment implements PostAdapter.OnPostClickListener { // Implementa el listener aquí
-
+public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
-    private PostViewModel postViewModel;
-    private List<Post> postList;
-    private PostAdapter adapter;
-    private int currentPage = 0; // Página actual
-    private boolean isLoading = false; // Para evitar cargas múltiples
+    private PostViewModel postViewModel; // ViewModel para los posts
+    private AuthViewModel authViewModel; //  autenticación
 
-    public HomeFragment() {}
+    public HomeFragment() {
 
-    public static HomeFragment newInstance(String p1, String p2) {
+    }
+
+    public static HomeFragment newInstance() {
         return new HomeFragment();
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        cargarPosts(); // Llama al método para recargar los posts
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        postViewModel = new ViewModelProvider(this).get(PostViewModel.class);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Inicializa el ViewModel
-        postViewModel = new ViewModelProvider(this).get(PostViewModel.class);
-
-        postList = new ArrayList<>();
-        adapter = new PostAdapter(postList, this); // Pasa "this" como el listener
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.recyclerView.setAdapter(adapter);
-
-        cargarPosts();
-
-        // Listener para cargar más posts al hacer scroll
-        binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                // Comprueba si el usuario ha llegado al final
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager != null) {
-                    int totalItemCount = layoutManager.getItemCount();
-                    int visibleItemCount = layoutManager.getChildCount();
-                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
-                    // Si estamos en el final de la lista
-                    if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount) {
-                        cargarPosts(); // Cargar más posts
-                    }
-                }
-            }
-        });
+        //barra de herramientas
+        ((AppCompatActivity) requireActivity()).setSupportActionBar(binding.tools);
 
         binding.fab.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), PostActivity.class);
             startActivity(intent);
         });
+
+        // RecyclerView
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        postViewModel.getAllPosts().observe(getViewLifecycleOwner(), posts -> {
+            if (posts != null && !posts.isEmpty()) {
+                // Log.d("HomeFragment", "Número de posts: " + posts.size());
+                PostAdapter adapter = new PostAdapter(posts);
+                binding.recyclerView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+                ((HomeActivity) requireActivity()).hideProgressBar();
+            } else {
+                Log.d("HomeFragment", "No hay posts disponibles.");
+                ((HomeActivity) requireActivity()).hideProgressBar();
+            }
+        });
+
+
+        setupMenu();
     }
 
-
-    private void cargarPosts() {
-        if (isLoading) return; // Evita solicitudes múltiples mientras se está cargando
-        isLoading = true; // Marca como cargando
-        postViewModel.getPosts(currentPage).observe(getViewLifecycleOwner(), posts -> {
-            if (posts != null && !posts.isEmpty()) {
-                postList.addAll(posts); // Añade nuevos posts a la lista existente
-                adapter.notifyDataSetChanged(); // Notifica al adaptador que los datos han cambiado
-                currentPage++; // Incrementa la página después de cargar los posts
+    private void setupMenu() {
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.main_menu, menu);
             }
-            isLoading = false; // Permite nuevas solicitudes
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.itemLogout) {
+                    onLogout();
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+    }
+
+    private void onLogout() {
+        authViewModel.logout().observe(getViewLifecycleOwner(), logoutResult -> {
+            if (logoutResult != null && logoutResult) {
+
+                Intent intent = new Intent(getContext(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } else {
+
+                Toast.makeText(getContext(), "Error al cerrar sesión. Intenta nuevamente.", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     @Override
-    public void onPostClick(Post post, int imageIndex) {
-
-
-        Intent intent = new Intent(getActivity(), PostDetailActivity.class);
-
-        startActivity(intent);
-
-    }
-
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
-    }
-
-    public void onLogout() {
-        Intent intent = new Intent(getContext(), MainActivity.class);
-        startActivity(intent);
-    }
-
-    public void setupMenu() {
-        binding.fab.setOnClickListener(v -> onLogout());
+        binding = null; // Evitar fugas de memoria
     }
 }

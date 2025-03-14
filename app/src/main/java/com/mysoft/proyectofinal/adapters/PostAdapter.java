@@ -1,88 +1,133 @@
 package com.mysoft.proyectofinal.adapters;
 
 
+import android.content.Context;
+import android.content.Intent;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.RecyclerView;
-
-
 
 import com.mysoft.proyectofinal.R;
 import com.mysoft.proyectofinal.model.Post;
+import com.mysoft.proyectofinal.model.User;
+import com.mysoft.proyectofinal.providers.PostProvider;
+import com.mysoft.proyectofinal.view.PostDetailActivity;
 import com.squareup.picasso.Picasso;
-
+import java.util.ArrayList;
 import java.util.List;
 
-public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
-    private List<Post> posts;
-    private OnPostClickListener listener; // Listener para manejar el click
 
-    // Constructor con el listener
-    public PostAdapter(List<Post> posts, OnPostClickListener listener) {
+public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
+
+    private List<Post> posts;
+    //   private OnPostDeleteListener deleteListener;
+
+    public PostAdapter(List<Post> posts) {
         this.posts = posts;
-        this.listener = listener;
     }
 
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
-        return new PostViewHolder(view);
+
+        return new  PostViewHolder(view);
+
     }
+
+   /* public interface OnPostDeleteListener {
+        void onDelete(Post post);
+    }*/
+
 
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         Post post = posts.get(position);
         holder.tvTitulo.setText(post.getTitulo());
         holder.tvDescripcion.setText(post.getDescripcion());
+        //holder.deleteButton.setOnClickListener(v -> deleteListener.onDelete(post));
 
-        Log.d("PostAdapter", "Cargando imágenes: " + post.getImagenes());
-
-        List<String> imagenes = post.getImagenes();
-
-        // Verificar si las imágenes no son nulas ni vacías
-        if (imagenes != null && !imagenes.isEmpty()) {
-            // Recorrer las imágenes y cargarlas dinámicamente
-            ImageView[] imageViews = {holder.ivImage1, holder.ivImage2, holder.ivImage3};
-
-            // Ocultar todas las imágenes inicialmente
-            for (ImageView imageView : imageViews) {
-                imageView.setVisibility(View.GONE);
+        if (post.getImagenes() != null) {
+            if (post.getImagenes().size() > 0) {
+                Picasso.get()
+                        .load(post.getImagenes().get(0))
+                        .into(holder.ivImage1);
+                holder.ivImage1.setVisibility(View.VISIBLE);
             }
 
-            // Cargar las imágenes correspondientes
-            for (int i = 0; i < imagenes.size(); i++) {
+            if (post.getImagenes().size() > 1) {
                 Picasso.get()
-                        .load(imagenes.get(i))
-                        .fit()
-                        .centerCrop()
-                        .error(R.drawable.uploadimg)
-                        .into(imageViews[i]);
-                imageViews[i].setVisibility(View.VISIBLE);
+                        .load(post.getImagenes().get(1)) // Cargar la segunda imagen
+                        .into(holder.ivImage2);
+                holder.ivImage2.setVisibility(View.VISIBLE);
+            }
 
-                // Añadir un OnClickListener a cada imagen
-                final int index = i; // Para capturar el índice de la imagen
-                imageViews[i].setOnClickListener(v -> {
-                    // Llamar al listener para pasar el post seleccionado
-                    listener.onPostClick(post, index);
-                });
+            if (post.getImagenes().size() > 2) {
+                Picasso.get()
+                        .load(post.getImagenes().get(2)) // Cargar la tercera imagen
+                        .into(holder.ivImage3);
+                holder.ivImage3.setVisibility(View.VISIBLE);
             }
         }
-    }
 
+        holder.itemView.setOnClickListener(v -> {
+            Context context = holder.itemView.getContext();
+            PostProvider postProvider = new PostProvider();
+
+            LiveData<Post> postDetailLiveData = postProvider.getPostDetail(post.getId());
+            postDetailLiveData.observe((LifecycleOwner) context, postDetail -> {
+                if (postDetail != null) {
+                    //Log.d("Postadapter", postDetail.getId() + postDetail.getTitulo());
+                    Intent intent = new Intent(context, PostDetailActivity.class);
+
+                    // Datos del Post
+                    // Log.d("Postadapter", postDetail.getId() + postDetail.getTitulo());
+                    intent.putExtra("idPost", post.getId());
+                    intent.putExtra("titulo", postDetail.getTitulo());
+                    intent.putExtra("descripcion", postDetail.getDescripcion());
+                    intent.putExtra("categoria", postDetail.getCategoria());
+                    intent.putExtra("duracion", postDetail.getDuracion());
+                    intent.putExtra("presupuesto", postDetail.getPresupuesto());
+
+                    // Datos del Usuario
+                    User user = postDetail.getUser();
+                    if (user != null) {
+                        Log.d("Postadapter", user.getUsername());
+                        intent.putExtra("username", user.getUsername());
+                        intent.putExtra("email", user.getEmail());
+                        intent.putExtra("redsocial", user.getRedSocial());
+                        intent.putExtra("foto_perfil", user.getString("foto_perfil"));
+                    } else {
+                        Log.d("Postadapter", "User is null");
+                    }
+
+                    // Lista de imágenes
+                    ArrayList<String> imageUrls = new ArrayList<>(postDetail.getImagenes());
+                    intent.putStringArrayListExtra("imagenes", imageUrls);
+
+                    // Lanza la actividad
+                    context.startActivity(intent);
+                } else {
+                    Log.e("PostDetail", "No se pudo obtener el detalle del post.");
+                }
+            });
+        });
+    }
     @Override
     public int getItemCount() {
         return posts.size();
     }
 
-    // ViewHolder para manejar las vistas
     public static class PostViewHolder extends RecyclerView.ViewHolder {
+        // public View deleteButton;
         TextView tvTitulo, tvDescripcion;
         ImageView ivImage1, ivImage2, ivImage3;
 
@@ -93,11 +138,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             ivImage1 = itemView.findViewById(R.id.ivImage1);
             ivImage2 = itemView.findViewById(R.id.ivImage2);
             ivImage3 = itemView.findViewById(R.id.ivImage3);
+            //  deleteButton = itemView.findViewById(R.id.btnDelete);
         }
     }
 
-    // Interface para manejar el click en el post
-    public interface OnPostClickListener {
-        void onPostClick(Post post, int imageIndex);
+    public void updatePosts(List<Post> newPosts) {
+        if (newPosts != null) {
+            this.posts.clear();
+            this.posts.addAll(newPosts);
+            notifyDataSetChanged();
+        }
     }
+
 }

@@ -14,15 +14,17 @@ import com.mysoft.proyectofinal.databinding.FragmentChatsBinding;
 
 public class ChatsFragment extends Fragment {
 
-    private FragmentChatsBinding binding;
+    public ChatsFragment() {
 
-    public ChatsFragment() {}
+    }
 
-    public static ChatsFragment newInstance(String p1, String p2) {
+    public static ChatsFragment newInstance(String param1, String param2) {
         return new ChatsFragment();
     }
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_chats, container, false);
     }
 }

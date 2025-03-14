@@ -9,27 +9,28 @@ import androidx.lifecycle.ViewModel;
 import com.mysoft.proyectofinal.providers.AuthProvider;
 
 public class MainViewModel extends ViewModel {
-    private final AuthProvider authProvider;
-
-    public MainViewModel(Context context) {
-        authProvider = new AuthProvider(context);
+    public final AuthProvider authProvider;
+    public MainViewModel(){
+        authProvider=new AuthProvider();
     }
 
-    // Método de inicio de sesión
     public LiveData<String> login(String email, String password) {
         MutableLiveData<String> loginResult = new MutableLiveData<>();
-
-        // Llamamos al AuthProvider para iniciar sesión
         authProvider.signIn(email, password).observeForever(userId -> {
-            if (userId != null) {
-                // Si el login es exitoso, devolver el userId
-                loginResult.setValue(userId);
-            } else {
-                // Si el login falla, devolver null
-                loginResult.setValue(null);
-            }
+            loginResult.setValue(userId);
         });
-
         return loginResult;
     }
+
+ /*   public LiveData<Boolean> verificarSesionActiva(){
+        MutableLiveData<Boolean> si=new MutableLiveData<>();
+
+        if (authProvider.getCurrentUserID() != null) {
+
+             si.setValue(true);
+        } else {
+            si.setValue(false);
+        }
+        return si;
+    }*/
 }

@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 
 
 import com.mysoft.proyectofinal.R;
+import com.mysoft.proyectofinal.model.User;
 import com.parse.LogInCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -17,83 +18,72 @@ import com.parse.ParseUser;
 
 import java.io.File;
 
+import com.parse.ParseUser;
+import android.util.Log;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 public class AuthProvider {
-    public AuthProvider(){}
 
-    public AuthProvider(Context context) {
-
-            Parse.initialize(new Parse.Configuration.Builder(context)
-                    .applicationId(context.getString(R.string.back4app_app_id))
-                    .clientKey(context.getString(R.string.back4app_client_key))
-                    .server(context.getString(R.string.back4app_server_url))
-                    .build()
-            );
+    public AuthProvider() {
 
     }
-
     public LiveData<String> signIn(String email, String password) {
-        MutableLiveData<String> userIdLiveData = new MutableLiveData<>();
-
-        ParseUser.logInInBackground(email, password, new LogInCallback() {
-            @Override
-            public void done(ParseUser user, ParseException e) {
-                if (e == null && user != null) {
-                    // Si el login es exitoso, devolver el userId
-                    userIdLiveData.setValue(user.getObjectId());
-                } else {
-                    // Si hay un error, mostrarlo en el log y devolver null
-                    Log.e("AuthProvider", "Error en inicio de sesión: " + e.getMessage());
-                    userIdLiveData.setValue(null);
-                }
+        MutableLiveData<String> authResult = new MutableLiveData<>();
+        ParseUser.logInInBackground(email, password, (user, e) -> {
+            if (e == null) {
+                // Login exitoso
+                authResult.setValue(user.getObjectId());
+                Log.d("AuthProvider", "Usuario autenticado exitosamente: " + user.getObjectId());
+            } else {
+                // Error en el login
+                Log.e("AuthProvider", "Error en inicio de sesión: ", e);
+                authResult.setValue(null);
             }
         });
-
-        return userIdLiveData;
+        return authResult;
     }
-
-    public LiveData<String> signUp(String username, String email, String password) {
+    // Registro con Parse
+    public LiveData<String> signUp(User user) {
         MutableLiveData<String> authResult = new MutableLiveData<>();
 
-        if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
-            authResult.setValue("Email o contraseña vacíos");
+        if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null) {
+            Log.e("AuthProvider", "Uno o más valores son nulos: " +
+                    "Username=" + user.getUsername() + ", " +
+                    "Password=" + user.getPassword() + ", " +
+                    "Email=" + user.getEmail());
+            authResult.setValue(null);
             return authResult;
         }
 
-        ParseUser user = new ParseUser();
-        user.setUsername(username); // Aquí estamos usando el username proporcionado
-        user.setEmail(email); // Establecemos el email también
-        user.setPassword(password);
+        ParseUser parseUser = new ParseUser();
+        parseUser.setUsername(user.getUsername() != null ? user.getUsername() : "defaultUsername");
+        parseUser.setPassword(user.getPassword() != null ? user.getPassword() : "defaultPassword");
+        parseUser.setEmail(user.getEmail() != null ? user.getEmail() : "default@example.com");
 
-        user.signUpInBackground(e -> {
+        parseUser.signUpInBackground(e -> {
             if (e == null) {
-                authResult.setValue(user.getObjectId());
-                Log.d("AuthProvider", "Usuario registrado exitosamente: " + user.getObjectId());
+                // Registro exitoso
+                authResult.setValue(parseUser.getObjectId());
+                Log.d("AuthProvider", "Usuario registrado exitosamente: " + parseUser.getObjectId());
             } else {
+                // Error en el registro
                 Log.e("AuthProvider", "Error en registro: ", e);
-                authResult.setValue(e.getMessage());
+                authResult.setValue(null);
             }
         });
-
         return authResult;
     }
 
 
-    public LiveData<String> getCurrentUserID() {
-        MutableLiveData<String> currentUserId = new MutableLiveData<>();
-        ParseUser currentUser = ParseUser.getCurrentUser();
-        if (currentUser != null) {
-            currentUserId.setValue(currentUser.getObjectId());
-        }
-        return currentUserId;
-    }
-
-    public MutableLiveData<Boolean> logout() {
+    public LiveData<Boolean> logout() {
         MutableLiveData<Boolean> logoutResult = new MutableLiveData<>();
         ParseUser.logOutInBackground(e -> {
             if (e == null) {
                 logoutResult.setValue(true);
-                Log.d("AuthProvider", "Usuario desconectado.");
+                Log.d("AuthProvider", "Caché eliminada y usuario desconectado.");
+
             } else {
+
                 logoutResult.setValue(false);
                 Log.e("AuthProvider", "Error al desconectar al usuario: ", e);
             }

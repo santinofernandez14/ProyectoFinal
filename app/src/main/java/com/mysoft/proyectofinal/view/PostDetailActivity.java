@@ -4,25 +4,35 @@ package com.mysoft.proyectofinal.view;
 
 import android.os.Bundle;
 
+import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 
 
-
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.mysoft.proyectofinal.R;
+import com.mysoft.proyectofinal.adapters.ComentarioAdapter;
+import com.mysoft.proyectofinal.adapters.EfectoTransformer;
+import com.mysoft.proyectofinal.adapters.ImageSliderAdapter;
 import com.mysoft.proyectofinal.databinding.ActivityPostDetailBinding;
 import com.mysoft.proyectofinal.viewmodel.PostDetailViewModel;
 import com.parse.ParseUser;
+import com.squareup.picasso.Picasso;
 
-import org.imaginativeworld.whynotimagecarousel.ImageCarousel;
-import org.imaginativeworld.whynotimagecarousel.model.CarouselItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,109 +41,155 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PostDetailActivity extends AppCompatActivity {
     private ActivityPostDetailBinding binding;
-    private ImageCarousel imageCarousel;
     private PostDetailViewModel postDetailViewModel;
-    private String postId;  // Declaramos postId como una variable de clase
-    private CircleImageView circleImageView; // Declaramos CircleImageView para la foto de perfil
-    private CircleImageView circleImageBackPostDetail;
-    private MutableLiveData<Boolean> navigateToHome = new MutableLiveData<>();
-
-    public LiveData<Boolean> getNavigateToHome() {
-        return navigateToHome;
-    }
-
-    public void navigateToHome() {
-        navigateToHome.setValue(true);
-    }
+    private ComentarioAdapter comentarioAdapter;
+    private String postId;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_post_detail);
 
-        // Obtener el ImageCarousel del layout
-        imageCarousel = findViewById(R.id.carousel);
-
-        // Inicializar CircleImageView para la foto de perfil
-        circleImageView = findViewById(R.id.circleImageView);
-
-        // Inicializar ViewModel
         postDetailViewModel = new ViewModelProvider(this).get(PostDetailViewModel.class);
 
-        // Obtener el usuario (supongamos que ya tienes un ParseUser actual)
-        ParseUser user = ParseUser.getCurrentUser();  // Obtener el usuario actual (por ejemplo)
+        binding = ActivityPostDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        // Obtener los posts de este usuario
-        postDetailViewModel.getAllPosts(user);
+        postId = getIntent().getStringExtra("idPost");
+        if (postId != null) {
+            postDetailViewModel.fetchCommentario(postId);
+        }
 
-        // Observar las imágenes de los posts
-        postDetailViewModel.getImages().observe(this, posts -> {
-            if (posts != null && !posts.isEmpty()) {
-                List<CarouselItem> carouselItems = new ArrayList<>();
-                for (String imageUrl : posts) {
-                    // Crear un CarouselItem para cada imagen
-                    carouselItems.add(new CarouselItem(imageUrl));
-                }
+        binding.recyclerComentarios.setLayoutManager(new LinearLayoutManager(this));
+        comentarioAdapter = new ComentarioAdapter(new ArrayList<>());
+        binding.recyclerComentarios.setAdapter(comentarioAdapter);
 
-                // Configurar las imágenes del carrusel
-                imageCarousel.setData(carouselItems);
-            }
+        // Observing comments
+        postDetailViewModel.getCommentsLiveData().observe(this, comentarios -> {
+            comentarioAdapter.setComentarios(comentarios);
+            comentarioAdapter.notifyDataSetChanged();
         });
 
-        // Obtener el postId (puedes obtenerlo de un extra de Intent, o asignarlo de alguna manera)
-        postId = "some_post_id";  // Reemplaza con el ID del post real
+        String currentUser = ParseUser.getCurrentUser().getUsername();
+        String perfilUserId = getIntent().getStringExtra("username");
 
-        // Llamar al método para cargar los detalles del post
-        cargarDetallesPost();
+        if (currentUser != null && currentUser.equals(perfilUserId)) {
+            binding.btnEliminarPost.setVisibility(View.VISIBLE);
+            binding.btnEliminarPost.setOnClickListener(v -> confirmaBorrar());
+        } else {
+            binding.btnEliminarPost.setVisibility(View.GONE);
+        }
 
-        // Llamar al método para cargar la foto de perfil del usuario
-        cargarFotoPerfil(user.getObjectId());
+        detailInfo();
+        setupObservers();
 
-
-
+        binding.fabComentar.setOnClickListener(v -> comentar());
     }
 
 
 
-    private void cargarDetallesPost() {
-        TextView lugar = findViewById(R.id.lugar);
-        TextView categoria = findViewById(R.id.categoria);
-        TextView description = findViewById(R.id.description);
-        TextView duracion = findViewById(R.id.duracion);
-        TextView presupuesto = findViewById(R.id.presupuesto);
+    private void confirmaBorrar() {
 
-        // Obtener los detalles del post desde el ViewModel
-        postDetailViewModel.getPostDetail(postId).observe(this, postDetails -> {
-            if (postDetails != null) {
-                lugar.setText(postDetails.getTitulo());
-                categoria.setText(postDetails.getCategoria());
-                description.setText(postDetails.getDescripcion());
-                duracion.setText(postDetails.getDuracion());
-                presupuesto.setText(String.valueOf(postDetails.getPresupuesto())); // Asegúrate de convertir el valor en String
-            }
-        });
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Confirmación");
+        alert.setMessage("¿Estás seguro de que deseas eliminar este post?");
+
+        alert.setPositiveButton("Eliminar", (dialog, which) -> postDetailViewModel.eliminarPost(postId));
+
+        alert.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+
+        alert.show();
     }
 
+    private void comentar() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(PostDetailActivity.this);
+        alert.setTitle("¡COMENTARIO!");
+        alert.setMessage("Ingresa tu comentario: ");
 
-    // Método para cargar la foto de perfil
-    private void cargarFotoPerfil(String userId) {
-        // Llamar al método del ViewModel para obtener la URL de la foto de perfil
-        postDetailViewModel.fetchProfileImage(userId);
+        EditText editText = new EditText(PostDetailActivity.this);
+        editText.setHint("Texto");
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        editText.setLayoutParams(params);
+        params.setMargins(36, 0, 36, 36);
 
-        // Observar la URL de la foto de perfil
-        postDetailViewModel.getProfileImageUrl().observe(this, fotoPerfilUrl -> {
-            if (fotoPerfilUrl != null && !fotoPerfilUrl.isEmpty()) {
-                // Si la URL no está vacía, cargamos la imagen con Glide
-                Glide.with(this)
-                        .load(fotoPerfilUrl)
-                        .into(circleImageView);
+        RelativeLayout container = new RelativeLayout(PostDetailActivity.this);
+        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        container.setLayoutParams(relativeParams);
+        container.addView(editText);
+        alert.setView(container);
+
+        alert.setPositiveButton("Ok", (dialog, which) -> {
+            String value = editText.getText().toString().trim();
+            if (!value.isEmpty()) {
+                postDetailViewModel.grabaComentario(postId, value);
             } else {
-                // Si no hay URL, se asigna una imagen predeterminada
-                circleImageView.setImageResource(R.drawable.ic_person);
+                Toast.makeText(PostDetailActivity.this, "El comentario no puede estar vacío", Toast.LENGTH_SHORT).show();
             }
+        });
+
+        alert.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+
+        alert.show();
+    }
+
+    private void setupObservers() {
+        postDetailViewModel.getCommentsLiveData().observe(this, comments -> {
+            // updateUI(comments);
+        });
+
+        postDetailViewModel.getErrorLiveData().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Error: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        postDetailViewModel.getSuccessLiveData().observe(this, message -> {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            finish(); // Cierra la actividad tras eliminar el post
         });
     }
 
+    private void detailInfo() {
+        binding.nameUser.setText(getIntent().getStringExtra("username"));
+        binding.emailUser.setText(getIntent().getStringExtra("email"));
+        binding.insta.setText(getIntent().getStringExtra("redsocial"));
 
+        String fotoUrl = getIntent().getStringExtra("foto_perfil");
+        if (fotoUrl != null) {
+            Picasso.get()
+                    .load(fotoUrl)
+                    .placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person)
+                    .into(binding.circleImageView);
+        } else {
+            binding.circleImageView.setImageResource(R.drawable.ic_person);
+        }
 
+        ArrayList<String> urls = getIntent().getStringArrayListExtra("imagenes");
+        String titulo = "Lugar: " + getIntent().getStringExtra("titulo");
+        binding.lugar.setText(titulo);
+        String categoria = "Categoria: " + getIntent().getStringExtra("categoria");
+        binding.categoria.setText(categoria);
+        String comentario = "descripción: " + getIntent().getStringExtra("descripcion");
+        binding.description.setText(comentario);
+        String duracion = "Duración: " + getIntent().getIntExtra("duracion", 0) + " día/s";
+        binding.duracion.setText(duracion);
+        String presupuesto = "Presupuesto: U$ " + getIntent().getDoubleExtra("presupuesto", 0.0);
+        binding.presupuesto.setText(presupuesto);
+
+        if (urls != null && !urls.isEmpty()) {
+            ImageSliderAdapter imageSliderAdapter = new ImageSliderAdapter(urls);
+            binding.viewPager.setAdapter(imageSliderAdapter);
+            binding.viewPager.setPageTransformer(new EfectoTransformer());
+
+            // Conexión TabLayout con ViewPager2
+            new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+            }).attach();
+        }
+    }
 }

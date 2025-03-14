@@ -181,8 +181,6 @@
         android:background="@drawable/circular_background"
         android:scaleType="centerCrop"
         android:layout_margin="15dp"
-        android:padding="7dp"
-        android:clickable="true"
-        android:focusable="true"/>
+        android:padding="7dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

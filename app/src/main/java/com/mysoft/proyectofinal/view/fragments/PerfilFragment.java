@@ -24,12 +24,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
-
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 
 import com.mysoft.proyectofinal.R;
+import com.mysoft.proyectofinal.adapters.PostAdapter;
 import com.mysoft.proyectofinal.databinding.FragmentPerfilBinding;
 import com.mysoft.proyectofinal.util.ImageUtils;
+import com.mysoft.proyectofinal.view.HomeActivity;
+import com.mysoft.proyectofinal.viewmodel.PostViewModel;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -40,22 +44,42 @@ import java.io.IOException;
 public class PerfilFragment extends Fragment {
     private FragmentPerfilBinding binding;
     private ActivityResultLauncher<Intent> galleryLauncher;
+    private PostViewModel postViewModel;
 
     public PerfilFragment() {
-        // Constructor vacío
+
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentPerfilBinding.inflate(inflater, container, false);
+        postViewModel = new ViewModelProvider(this).get(PostViewModel.class);
         setupMenu();
         setupToolbar();
         displayUserInfo();
-        fetchPostCount(); // Método para contar publicaciones
         setupGalleryLauncher();
         setupProfileImageClick();
-
+        setupViewModel();
         return binding.getRoot();
+    }
+
+    private void setupViewModel() {
+        // Configurar RecyclerView
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+
+        postViewModel.getPostsByCurrentUser().observe(getViewLifecycleOwner(), posts -> {
+            if (posts != null && !posts.isEmpty()) {
+                Log.d("PerfilFragment", "Número de posts: " + posts.size());
+                PostAdapter adapter = new PostAdapter(posts);
+                binding.recyclerView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+                ((HomeActivity) requireActivity()).hideProgressBar();
+            } else {
+                Log.d("PerfilFragment", "No hay posts disponibles.");
+                ((HomeActivity) requireActivity()).hideProgressBar();
+            }
+        });
     }
 
     private void setupMenu() {
@@ -69,7 +93,6 @@ public class PerfilFragment extends Fragment {
             public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
                 if (menuItem.getItemId() == R.id.itemClose) {
                     Toast.makeText(requireContext(), "Cerrar sesión", Toast.LENGTH_SHORT).show();
-                    // Lógica para cerrar sesión
                     return true;
                 }
                 return false;
@@ -103,23 +126,6 @@ public class PerfilFragment extends Fragment {
         }
     }
 
-    private void fetchPostCount() {
-        ParseUser currentUser = ParseUser.getCurrentUser();
-        if (currentUser != null) {
-            ParseQuery<ParseObject> query = ParseQuery.getQuery("Post");
-            query.whereEqualTo("user", currentUser);
-            query.countInBackground((count, e) -> {
-                if (e == null) {
-                    binding.conteoPublicaciones.setText(String.valueOf(count));
-                } else {
-                    binding.conteoPublicaciones.setText("0");
-                }
-            });
-        } else {
-            binding.conteoPublicaciones.setText("0");
-        }
-    }
-
     private void setupGalleryLauncher() {
         galleryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -135,15 +141,13 @@ public class PerfilFragment extends Fragment {
     }
 
     private void setupProfileImageClick() {
-        if (isAdded() && getContext() != null) {
-            binding.circleImageView.setOnClickListener(v -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    ImageUtils.pedirPermisos(requireActivity(),
-                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                }
-                ImageUtils.openGallery(requireContext(), galleryLauncher);
-            });
-        }
+        binding.circleImageView.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                ImageUtils.pedirPermisos(requireActivity(),
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            }
+            ImageUtils.openGallery(requireContext(), galleryLauncher);
+        });
     }
 
     private void handleImageSelection(Uri imageUri) {
@@ -155,6 +159,7 @@ public class PerfilFragment extends Fragment {
             ImageUtils.subirImagenAParse(requireContext(), imageUri, new ImageUtils.ImageUploadCallback() {
                 @Override
                 public void onSuccess(String imageUrl) {
+
                     ParseUser currentUser = ParseUser.getCurrentUser();
                     if (currentUser != null) {
                         currentUser.put("foto_perfil", imageUrl);
@@ -178,6 +183,9 @@ public class PerfilFragment extends Fragment {
             Toast.makeText(requireContext(), "Error al cargar la imagen", Toast.LENGTH_SHORT).show();
         }
     }
-
-    // Aquí agregarás la lógica para ver los posts en slider más adelante.
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null; // Evitar fugas de memoria
+    }
 }
