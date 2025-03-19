@@ -1,6 +1,7 @@
 package com.mysoft.proyectofinal.adapters;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
@@ -28,51 +29,59 @@ import java.util.List;
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
 
     private List<Post> posts;
-    //   private OnPostDeleteListener deleteListener;
 
     public PostAdapter(List<Post> posts) {
-        this.posts = posts;
+        this.posts = posts != null ? posts : new ArrayList<>();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void setPosts(List<Post> posts) {
+        this.posts = posts != null ? posts : new ArrayList<>();
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
-
-        return new  PostViewHolder(view);
-
+        return new PostViewHolder(view);
     }
-
-   /* public interface OnPostDeleteListener {
-        void onDelete(Post post);
-    }*/
-
 
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         Post post = posts.get(position);
         holder.tvTitulo.setText(post.getTitulo());
         holder.tvDescripcion.setText(post.getDescripcion());
-        //holder.deleteButton.setOnClickListener(v -> deleteListener.onDelete(post));
+
+        // Limpiar imágenes anteriores
+        holder.ivImage1.setVisibility(View.GONE);
+        holder.ivImage1.setImageResource(0);
+        holder.ivImage2.setVisibility(View.GONE);
+        holder.ivImage2.setImageResource(0);
+        holder.ivImage3.setVisibility(View.GONE);
+        holder.ivImage3.setImageResource(0);
 
         if (post.getImagenes() != null) {
-            if (post.getImagenes().size() > 0) {
+            if (!post.getImagenes().isEmpty()) {
                 Picasso.get()
                         .load(post.getImagenes().get(0))
+                        .placeholder(R.drawable.uploadimg)
                         .into(holder.ivImage1);
                 holder.ivImage1.setVisibility(View.VISIBLE);
             }
 
             if (post.getImagenes().size() > 1) {
                 Picasso.get()
-                        .load(post.getImagenes().get(1)) // Cargar la segunda imagen
+                        .load(post.getImagenes().get(1))
+                        .placeholder(R.drawable.uploadimg)
                         .into(holder.ivImage2);
                 holder.ivImage2.setVisibility(View.VISIBLE);
             }
 
             if (post.getImagenes().size() > 2) {
                 Picasso.get()
-                        .load(post.getImagenes().get(2)) // Cargar la tercera imagen
+                        .load(post.getImagenes().get(2))
+                        .placeholder(R.drawable.uploadimg)
                         .into(holder.ivImage3);
                 holder.ivImage3.setVisibility(View.VISIBLE);
             }
@@ -85,11 +94,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             LiveData<Post> postDetailLiveData = postProvider.getPostDetail(post.getId());
             postDetailLiveData.observe((LifecycleOwner) context, postDetail -> {
                 if (postDetail != null) {
-                    //Log.d("Postadapter", postDetail.getId() + postDetail.getTitulo());
                     Intent intent = new Intent(context, PostDetailActivity.class);
 
                     // Datos del Post
-                    // Log.d("Postadapter", postDetail.getId() + postDetail.getTitulo());
                     intent.putExtra("idPost", post.getId());
                     intent.putExtra("titulo", postDetail.getTitulo());
                     intent.putExtra("descripcion", postDetail.getDescripcion());
@@ -121,13 +128,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             });
         });
     }
+
     @Override
     public int getItemCount() {
         return posts.size();
     }
 
     public static class PostViewHolder extends RecyclerView.ViewHolder {
-        // public View deleteButton;
         TextView tvTitulo, tvDescripcion;
         ImageView ivImage1, ivImage2, ivImage3;
 
@@ -138,10 +145,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             ivImage1 = itemView.findViewById(R.id.ivImage1);
             ivImage2 = itemView.findViewById(R.id.ivImage2);
             ivImage3 = itemView.findViewById(R.id.ivImage3);
-            //  deleteButton = itemView.findViewById(R.id.btnDelete);
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void updatePosts(List<Post> newPosts) {
         if (newPosts != null) {
             this.posts.clear();
@@ -150,4 +157,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
     }
 
+    // Método para limpiar completamente la lista
+    @SuppressLint("NotifyDataSetChanged")
+    public void clearPosts() {
+        this.posts.clear();
+        notifyDataSetChanged();
+    }
 }

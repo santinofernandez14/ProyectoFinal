@@ -1,30 +1,25 @@
 package com.mysoft.proyectofinal.view;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ProgressBar;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
-
 import com.google.android.material.navigation.NavigationBarView;
 import com.mysoft.proyectofinal.R;
 import com.mysoft.proyectofinal.databinding.ActivityHomeBinding;
 import com.mysoft.proyectofinal.view.fragments.ChatsFragment;
-
 import com.mysoft.proyectofinal.view.fragments.FiltrosFragment;
 import com.mysoft.proyectofinal.view.fragments.HomeFragment;
 import com.mysoft.proyectofinal.view.fragments.PerfilFragment;
 
 public class HomeActivity extends AppCompatActivity {
     private ActivityHomeBinding binding;
+    private View progressBarLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,39 +27,62 @@ public class HomeActivity extends AppCompatActivity {
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        //agrego un progress bar carando datos
+        // Inflar el ProgressBar
         LayoutInflater inflater = LayoutInflater.from(this);
-        View progressBarLayout = inflater.inflate(R.layout.progress_layout, binding.mainCont, false);
+        progressBarLayout = inflater.inflate(R.layout.progress_layout, binding.mainCont, false);
         binding.mainCont.addView(progressBarLayout);
+        showProgressBar();
 
-
+        // Configurar el BottomNavigationView
         binding.bottomNavigation.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if (item.getItemId() == R.id.itemHome) {
-                    openFragment(HomeFragment.newInstance()); // Pasamos userId aquí
-                } else if (item.getItemId() == R.id.itemChats) {
-                    openFragment(new ChatsFragment());
-                } else if (item.getItemId() == R.id.itemPerfil) {
-                    openFragment(new PerfilFragment());
-                } else if (item.getItemId() == R.id.itemFiltros) {
-                    openFragment(new FiltrosFragment());
+                try {
+                    Fragment selectedFragment = null;
+                    if (item.getItemId() == R.id.itemHome) {
+                        selectedFragment = HomeFragment.newInstance();
+                    } else if (item.getItemId() == R.id.itemChats) {
+                        selectedFragment = new ChatsFragment();
+                    } else if (item.getItemId() == R.id.itemPerfil) {
+                        selectedFragment = new PerfilFragment();
+                    } else if (item.getItemId() == R.id.itemFiltros) {
+                        selectedFragment = new FiltrosFragment();
+                    }
+
+                    if (selectedFragment != null) {
+                        openFragment(selectedFragment);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 return true;
             }
         });
-        openFragment(HomeFragment.newInstance()); // Pasa userId aquí también
+
+        // Cargar HomeFragment por defecto
+        if (savedInstanceState == null) {
+            openFragment(HomeFragment.newInstance());
+        }
     }
 
     private void openFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.container, fragment);
-        fragmentTransaction.commit();
+        try {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.container, fragment);
+            fragmentTransaction.commitAllowingStateLoss(); // Previene crashes por pérdida de estado
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showProgressBar() {
+        if (progressBarLayout != null) {
+            progressBarLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     public void hideProgressBar() {
-        View progressBarLayout = findViewById(R.id.progress_layout);
         if (progressBarLayout != null) {
             progressBarLayout.setVisibility(View.GONE);
         }

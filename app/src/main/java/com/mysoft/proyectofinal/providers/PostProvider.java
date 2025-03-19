@@ -216,15 +216,17 @@ public class PostProvider {
     }
 
 
+    // Mét odo para obtener comentarios de un post
     public interface CommentsCallback {
         void onSuccess(List<ParseObject> comments);
+
         void onFailure(Exception e);
     }
 
     public void fetchComments(String postId, CommentsCallback callback) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Comentario");
         query.whereEqualTo("post", ParseObject.createWithoutData("Post", postId));
-        query.include("user"); // Incluye los datos del usuario en la consulta
+        query.include("user"); // Incluir los datos del usuario en la consulta
         query.findInBackground((comentarios, e) -> {
             if (e == null) {
                 callback.onSuccess(comentarios);
@@ -234,10 +236,11 @@ public class PostProvider {
         });
     }
 
+    // Mét odo para guardar un comentario
     public void saveComment(String postId, String commentText, ParseUser currentUser, SaveCallback callback) {
         ParseObject post = ParseObject.createWithoutData("Post", postId);
 
-        ParseObject comentario = new ParseObject("Comentario");
+        ParseObject comentario = ParseObject.create("Comentario");
         comentario.put("texto", commentText);
         comentario.put("post", post);
         comentario.put("user", currentUser);
@@ -245,4 +248,62 @@ public class PostProvider {
         comentario.saveInBackground(callback);
     }
 
+    // Mét odo para obtener posts filtrados
+    public LiveData<List<Post>> getPostsFiltrados(String categoria, String orden) {
+        MutableLiveData<List<Post>> result = new MutableLiveData<>();
+        ParseQuery<Post> query = ParseQuery.getQuery(Post.class);
+
+        // Apply category filter
+        if (!categoria.equals("Todas")) {
+            query.whereEqualTo("categoria", categoria);
+        }
+
+        // Apply order
+        switch (orden) {
+            case "Más recientes":
+                query.orderByDescending("createdAt");
+                break;
+            case "Más antiguos":
+                query.orderByAscending("createdAt");
+                break;
+            default:
+                query.orderByDescending("createdAt"); // Por defecto, ordenar por más recientes
+                break;
+        }
+
+        query.include("user");
+        query.findInBackground((posts, e) -> {
+            if (e == null) {
+                // Siempre devolver la lista de posts, incluso si está vacía
+                result.setValue(posts != null ? posts : new ArrayList<>());
+
+                // Registrar en el log para depuración
+                if (posts == null || posts.isEmpty()) {
+                    if (!categoria.equals("Todas")) {
+                        Log.d("PostProvider", "No hay posts para la categoría: " + categoria);
+                    } else {
+                        Log.d("PostProvider", "No hay posts disponibles");
+                    }
+                } else {
+                    Log.d("PostProvider", "Se encontraron " + posts.size() + " posts");
+                }
+            } else {
+                result.setValue(new ArrayList<>());
+                Log.e("PostProvider", "Error al recuperar posts filtrados: ", e);
+            }
+        });
+
+        return result;
+    }
+    // Mét odo genérico para ejecutar consultas de posts
+    private void ejecutarConsulta(ParseQuery<Post> query, MutableLiveData<List<Post>> result) {
+        query.findInBackground((posts, e) -> {
+            if (e == null) {
+                result.setValue(posts);
+            } else {
+                result.setValue(new ArrayList<>());
+                Log.e("PostProvider", "Error al recuperar posts: ", e);
+            }
+        });
+    }
 }

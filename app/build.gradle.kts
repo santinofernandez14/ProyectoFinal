@@ -51,6 +51,7 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel:2.8.7")  // Verifica la última versión
     implementation ("androidx.lifecycle:lifecycle-livedata:2.8.7")
     implementation(libs.core)
+    implementation(libs.navigation.runtime)
 
     // Dependencias de testing
     testImplementation("junit:junit:4.13.2")

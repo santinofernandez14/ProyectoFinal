@@ -1,22 +1,17 @@
 package com.mysoft.proyectofinal.viewmodel;
 
-
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-
-import com.mysoft.proyectofinal.model.Post;
 import com.mysoft.proyectofinal.providers.PostProvider;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PostDetailViewModel extends ViewModel {
@@ -42,6 +37,7 @@ public class PostDetailViewModel extends ViewModel {
         return successLiveData;
     }
 
+    // Método para obtener los comentarios
     public void fetchCommentario(String postId) {
         postProvider.fetchComments(postId, new PostProvider.CommentsCallback() {
             @Override
@@ -56,6 +52,7 @@ public class PostDetailViewModel extends ViewModel {
         });
     }
 
+    // Método para eliminar el post
     public void eliminarPost(String postId) {
         postProvider.deletePost(postId).observeForever(mensaje -> {
             if (mensaje.equals("Post eliminado correctamente")) {
@@ -66,13 +63,24 @@ public class PostDetailViewModel extends ViewModel {
         });
     }
 
+    // Método para grabar un comentario
     public void grabaComentario(String postId, String commentText) {
         ParseUser currentUser = ParseUser.getCurrentUser();
-        postProvider.saveComment(postId, commentText, currentUser, e -> {
-            if (e == null) {
-                fetchCommentario(postId); // Actualiza la lista de comentarios
-            } else {
-                errorLiveData.postValue(e.getMessage());
+
+        // Validación del usuario
+        if (currentUser == null) {
+            errorLiveData.postValue("Usuario no autenticado");
+            return;
+        }
+
+        postProvider.saveComment(postId, commentText, currentUser, new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    fetchCommentario(postId); // Actualiza la lista de comentarios después de guardar el comentario
+                } else {
+                    errorLiveData.postValue(e.getMessage());
+                }
             }
         });
     }
