@@ -1,43 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    tools:context=".view.fragments.FiltrosFragment">
+    android:padding="16dp">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
+        <Spinner
+            android:id="@+id/spinnerCategoria"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:elevation="4dp"
-            android:background="@drawable/headerbkg"
-            app:title="@string/Filtros"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
-    </com.google.android.material.appbar.AppBarLayout>
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"/>
 
-    <!-- Spinner para seleccionar la categoría -->
-    <Spinner
-        android:id="@+id/spinnerCategorias"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:minHeight="48dp"
-        android:paddingVertical="8dp"
-        android:background="@android:drawable/btn_default"/>
+        <Spinner
+            android:id="@+id/spinnerOrden"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"/>
 
+        <Button
+            android:id="@+id/btnAplicar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Aplicar Filtros"/>
 
-    <!-- Botón para aplicar el filtro -->
-    <Button
-        android:id="@+id/btnAplicar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Aplicar Filtros"
-        android:layout_marginTop="16dp"/>
-
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>

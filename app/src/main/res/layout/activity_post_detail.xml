@@ -39,44 +39,44 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="15dp"
-                android:layout_gravity="center|right"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="5dp"
-                android:gravity="center"
+                android:layout_marginTop="30dp"
+                 android:layout_gravity="end|top"
+                android:layout_marginEnd="20dp"
+                android:gravity="start"
                 tools:ignore="RtlHardcoded">
 
-                <TextView
-                    android:id="@+id/nameUser"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/redsocial"
-                    android:textColor="@color/white"
-                    android:textStyle="bold"
-                    android:textSize="12sp" />
+            <TextView
+                android:id="@+id/nameUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/redsocial"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="4sp" />
 
-                <TextView
-                    android:id="@+id/emailUser"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/redsocial"
-                    android:textColor="@color/white"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    tools:ignore="TextSizeCheck" />
-                <TextView
-                    android:id="@+id/insta"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/redsocial"
-                    android:textColor="@color/white"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    tools:ignore="TextSizeCheck" />
+            <TextView
+                android:id="@+id/emailUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/redsocial"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:ignore="TextSizeCheck" />
 
+            <TextView
+                android:id="@+id/insta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/redsocial"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:ignore="TextSizeCheck" />
 
-            </LinearLayout>
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+        </LinearLayout>
+
+    </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Main Content -->

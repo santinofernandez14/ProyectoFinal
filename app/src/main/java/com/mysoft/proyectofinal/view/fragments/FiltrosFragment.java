@@ -1,6 +1,7 @@
 package com.mysoft.proyectofinal.view.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,76 +15,55 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.mysoft.proyectofinal.R;
+import com.mysoft.proyectofinal.viewmodel.PostViewModel;
 import com.parse.ParseUser;
 
 public class FiltrosFragment extends Fragment {
-
-    private Spinner spinnerCategorias;
+    private Spinner spinnerCategoria;
+    private Spinner spinnerOrden;
     private Button btnAplicar;
-    private String categoriaSeleccionada;
+    private PostViewModel postViewModel;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_filtros, container, false);
 
-        spinnerCategorias = view.findViewById(R.id.spinnerCategorias);
+        spinnerCategoria = view.findViewById(R.id.spinnerCategoria);
+        spinnerOrden = view.findViewById(R.id.spinnerOrden);
         btnAplicar = view.findViewById(R.id.btnAplicar);
 
-        setupCategorySpinner();
-        setupApplyFilterButton();
+        postViewModel = new ViewModelProvider(requireActivity()).get(PostViewModel.class);
+
+        configurarSpinners();
+        btnAplicar.setOnClickListener(v -> aplicarFiltros());
 
         return view;
     }
 
-    private void setupCategorySpinner() {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                requireContext(), R.array.categorias_array, android.R.layout.simple_spinner_item
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategorias.setAdapter(adapter);
+    private void configurarSpinners() {
+        ArrayAdapter<CharSequence> categoriaAdapter = ArrayAdapter.createFromResource(
+                requireContext(), R.array.categorias_array, android.R.layout.simple_spinner_item);
+        categoriaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategoria.setAdapter(categoriaAdapter);
 
-        spinnerCategorias.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                categoriaSeleccionada = parent.getItemAtPosition(position).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                categoriaSeleccionada = null;
-            }
-        });
+        ArrayAdapter<CharSequence> ordenAdapter = ArrayAdapter.createFromResource(
+                requireContext(), R.array.orden_array, android.R.layout.simple_spinner_item);
+        ordenAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerOrden.setAdapter(ordenAdapter);
     }
 
-    private void setupApplyFilterButton() {
-        btnAplicar.setOnClickListener(v -> {
-            if (categoriaSeleccionada == null || categoriaSeleccionada.isEmpty()) {
-                Toast.makeText(getContext(), "Selecciona una categoría", Toast.LENGTH_SHORT).show();
-                return;
-            }
+    private void aplicarFiltros() {
+        String categoria = spinnerCategoria.getSelectedItem().toString();
+        String orden = spinnerOrden.getSelectedItem().toString();
 
-            // Verifica que el usuario sigue autenticado antes de aplicar filtros
-            if (ParseUser.getCurrentUser() == null) {
-                Toast.makeText(getContext(), "La sesión ha expirado. Inicia sesión nuevamente.", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        Log.d("FiltrosFragment", "Aplicando filtros: Categoría=" + categoria + ", Orden=" + orden);
 
-            abrirPostDetailFragment(categoriaSeleccionada);
-        });
-    }
+        // Aplicar filtros y cargar posts filtrados
+        postViewModel.aplicarFiltros(categoria, orden);
 
-    private void abrirPostDetailFragment(String categoria) {
-        PostDetailFragment postDetailFragment = new PostDetailFragment();
-        Bundle args = new Bundle();
-        args.putString("categoria", categoria);
-        postDetailFragment.setArguments(args);
-
-        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, postDetailFragment, "POST_DETAIL");
-        transaction.addToBackStack(null);
-        transaction.commit();
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
 }

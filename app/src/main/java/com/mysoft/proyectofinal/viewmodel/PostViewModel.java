@@ -1,5 +1,7 @@
 package com.mysoft.proyectofinal.viewmodel;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -12,15 +14,21 @@ import com.parse.ParseObject;
 import java.util.List;
 
 public class PostViewModel extends ViewModel {
-    private final MutableLiveData<String> postSuccess = new MutableLiveData<>();
     private final PostProvider postProvider;
-    private LiveData<List<Post>> posts;
-    private final MutableLiveData<List<ParseObject>> commentsLiveData = new MutableLiveData<>();
-    private final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<Post>> postsLiveData;
+    private final MutableLiveData<String> postSuccess;
+    private String currentCategoria = "Todas";
+    private String currentOrden = "Más recientes";
 
     public PostViewModel() {
-        posts = new MutableLiveData<>();
         postProvider = new PostProvider();
+        postsLiveData = new MutableLiveData<>();
+        postSuccess = new MutableLiveData<>();
+        loadPosts();
+    }
+
+    public LiveData<List<Post>> getPosts() {
+        return postsLiveData;
     }
 
     public LiveData<String> getPostSuccess() {
@@ -29,25 +37,52 @@ public class PostViewModel extends ViewModel {
 
     public LiveData<String> publicar(Post post) {
         MutableLiveData<String> resultLiveData = new MutableLiveData<>();
-
-        postProvider.addPost(post)
-                .observeForever(result -> {
-                    postSuccess.setValue(result);
-                    resultLiveData.setValue(result);
-                });
-
+        postProvider.addPost(post).observeForever(result -> {
+            postSuccess.setValue(result);
+            resultLiveData.setValue(result);
+            if (result.equals("Post publicado")) {
+                loadPosts();
+            }
+        });
         return resultLiveData;
     }
 
-
     public LiveData<List<Post>> getAllPosts() {
-        posts = postProvider.getAllPosts();
-        return posts;
+        return postProvider.getAllPosts();
     }
 
     public LiveData<List<Post>> getPostsByCurrentUser() {
-        posts = postProvider.getPostsByCurrentUser();
-        return posts;
+        return postProvider.getPostsByCurrentUser();
     }
 
+    public void aplicarFiltros(String categoria, String orden) {
+        Log.d("PostViewModel", "Aplicando filtros: Categoría=" + categoria + ", Orden=" + orden);
+        this.currentCategoria = categoria;
+        this.currentOrden = orden;
+        loadPosts();
+    }
+
+    // Método para resetear los filtros a sus valores predeterminados
+    public void resetFilters() {
+        Log.d("PostViewModel", "Reseteando filtros");
+        this.currentCategoria = "Todas";
+        this.currentOrden = "Más recientes";
+    }
+
+    // Método para cargar posts con los filtros actuales
+    public void loadPosts() {
+        Log.d("PostViewModel", "Cargando posts con filtros: Categoría=" + currentCategoria + ", Orden=" + currentOrden);
+        postProvider.getPostsFiltrados(currentCategoria, currentOrden)
+                .observeForever(posts -> {
+                    Log.d("PostViewModel", "Posts cargados: " + (posts != null ? posts.size() : 0));
+                    postsLiveData.setValue(posts);
+                });
+    }
+
+    // Método para verificar si hay filtros activos
+    public boolean isFiltered() {
+        boolean filtered = !currentCategoria.equals("Todas") || !currentOrden.equals("Más recientes");
+        Log.d("PostViewModel", "¿Hay filtros activos? " + filtered);
+        return filtered;
+    }
 }
