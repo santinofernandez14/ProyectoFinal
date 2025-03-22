@@ -3,7 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/login"
+    android:gravity="center"
+    android:orientation="vertical">
 
     <!-- AppBarLayout con CollapsingToolbarLayout -->
     <com.google.android.material.appbar.AppBarLayout
@@ -59,14 +62,14 @@
                     android:text="@string/titulo_ppal"
                     android:textSize="24sp"
                     android:textAlignment="center"
-                    android:textColor="@color/lavender" />
+                    android:textColor="@color/green" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="150dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/lavender_border"
+                    android:background="@drawable/custom_edittext"
                     android:visibility="gone"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
@@ -75,11 +78,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/lavender_border"
+                    android:background="@drawable/custom_edittext"
                     android:hint="@string/titulo_post"
                     android:padding="16dp"
                     android:textSize="13sp"
-                    android:textColor="@color/lavender"
+                    android:textColor="@color/green"
                     android:inputType="text" />
 
                 <EditText
@@ -87,11 +90,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/lavender_border"
+                    android:background="@drawable/custom_edittext"
                     android:hint="@string/descripcion"
                     android:padding="16dp"
                     android:textSize="13sp"
-                    android:textColor="@color/lavender"
+                    android:textColor="@color/green"
                     android:inputType="textMultiLine"
                     android:gravity="top" />
 
@@ -100,19 +103,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/lavender_border" />
+                    android:textColor="@color/green"
+                    android:background="@drawable/custom_edittext" />
 
                 <EditText
                     android:id="@+id/etDuracion"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:background="@drawable/lavender_border"
+                    android:background="@drawable/custom_edittext"
                     android:layout_marginTop="10dp"
                     android:padding="16dp"
                     android:hint="@string/duracion"
                     android:gravity="start|center_vertical"
                     android:inputType="number"
-                    android:textColor="@color/lavender"
+                    android:textColor="@color/green"
                     android:textSize="13sp" />
 
                 <EditText
@@ -121,11 +125,11 @@
                     android:layout_height="50dp"
                     android:hint="@string/presupuesto"
                     android:inputType="numberDecimal"
-                    android:background="@drawable/lavender_border"
+                    android:background="@drawable/custom_edittext"
                     android:layout_marginTop="10dp"
                     android:padding="16dp"
                     android:gravity="start|center_vertical"
-                    android:textColor="@color/lavender"
+                    android:textColor="@color/green"
                     android:textSize="13sp" />
 
                 <Button
@@ -133,6 +137,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:layout_marginTop="16dp"
+                    android:backgroundTint="@color/design_default_color_secondary"
                     android:text="@string/publicar"
                     android:textSize="16sp" />
 
@@ -146,12 +151,7 @@
         android:orientation="horizontal"
         android:layout_gravity="bottom">
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/back_bottom"
-            android:scaleType="centerCrop"
-            android:layout_gravity="end" />
+
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

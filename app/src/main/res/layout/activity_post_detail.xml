@@ -5,14 +5,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/login"
+    android:gravity="center"
+    android:orientation="vertical"
     tools:context="view.fragments.PerfilFragment">
 
     <!-- AppBarLayout for the header -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="260dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:background="@drawable/headerbkg">
+        android:background="@drawable/login"
+        android:gravity="center"
+        android:orientation="vertical"
+        >
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
@@ -50,16 +55,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/redsocial"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:textStyle="bold"
-                android:textSize="4sp" />
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/emailUser"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/redsocial"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 tools:ignore="TextSizeCheck" />
@@ -69,8 +74,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/redsocial"
-                android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textColor="@color/black"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 tools:ignore="TextSizeCheck" />
 
@@ -103,14 +108,14 @@
                     android:clipChildren="false"
                     android:paddingStart="16dp"
                     android:paddingEnd="5dp"
-                    android:overScrollMode="never" />
+                     />
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tabLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="5dp"
-                    app:tabIndicatorColor="@color/purple_500"
+                    app:tabIndicatorColor="@color/green"
                     app:tabIndicatorHeight="4dp" />
                 <ImageView
                     android:id="@+id/fabComentar"
@@ -128,7 +133,7 @@
                 android:id="@+id/lugar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/colorGray"
+                android:textColor="@color/colorDarkGray"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -147,6 +152,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorDarkGray"
+                android:textStyle="bold"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -155,6 +161,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorDarkGray"
+                android:textStyle="bold"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -163,6 +170,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorDarkGray"
+                android:textStyle="bold"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -209,6 +217,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Eliminar Post"
+                android:backgroundTint="@color/design_default_color_secondary"
                 android:layout_marginTop="16dp"
                 android:layout_gravity="center_horizontal"/>
         </LinearLayout>
