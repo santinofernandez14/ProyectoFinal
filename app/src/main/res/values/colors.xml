@@ -18,4 +18,6 @@
     <color name="colorPrimaryDark">#2D3B7B</color>
     <color name="colorAccent">#E9F1FA</color>
     <color name="colorDarkGray">#4E4D4D</color>
+    <color name="green">#03dac6</color>
+
 </resources>

@@ -14,7 +14,7 @@
             android:id="@+id/tools"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/primary"
+            android:background="@color/green"
             app:title="Publicaciones"
             app:titleTextColor="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -67,7 +67,7 @@
         android:layout_marginEnd="16dp"
         android:contentDescription="Crear nuevo post"
         android:src="@drawable/ic_add"
-        app:backgroundTint="@color/primary"
+        app:backgroundTint="@color/green"
         app:fabSize="normal" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
